@@ -57,26 +57,23 @@ cd dax-ai-data-collection
 npm install
 ```
 
-### **3. Install Backend Dependencies**
-```bash
-# Option 1: Using the startup script
-chmod +x start-backend.sh
-./start-backend.sh
+### **3. Integrate with Your Existing FastAPI**
+Since you already have a FastAPI setup with chat functionality, integrate the file management endpoints:
 
-# Option 2: Manual setup
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements-backend.txt
+```bash
+# Copy the file management code to your existing FastAPI
+cp file_management_endpoints.py /path/to/your/fastapi/project/
+
+# Follow the integration instructions in file_management_endpoints.py
+# to add the endpoints to your existing FastAPI application
 ```
 
 ### **4. Start Both Services**
 
-**Terminal 1 (Backend):**
+**Terminal 1 (Your FastAPI Backend):**
 ```bash
-./start-backend.sh
-# OR manually:
-# source venv/bin/activate
-# python file-management-api.py
+# Start your existing FastAPI with the integrated file management endpoints
+# Make sure it includes CORS for http://localhost:3000
 ```
 
 **Terminal 2 (Frontend):**
