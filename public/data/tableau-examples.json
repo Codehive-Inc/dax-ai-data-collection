@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tableau-001",
+    "sourceExpression": "SUM([Revenue]) / SUM([Units])",
+    "targetDaxFormula": "DIVIDE(SUM([Revenue]), SUM([Units]))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-002",
+    "sourceExpression": "IF [Category] = \"Electronics\" THEN [Revenue] ELSE 0 END",
+    "targetDaxFormula": "IF([Category] = \"Electronics\", [Revenue], 0)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-003",
+    "sourceExpression": "WINDOW_SUM(SUM([Revenue]))",
+    "targetDaxFormula": "CALCULATE(SUM([Revenue]), FILTER(ALL(Sales), Sales[RowNumber] <= MAX(Sales[RowNumber])))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-004",
+    "sourceExpression": "RUNNING_SUM(SUM([Revenue]))",
+    "targetDaxFormula": "CALCULATE(SUM([Revenue]), FILTER(ALL(Sales), Sales[Date] <= MAX(Sales[Date])))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-005",
+    "sourceExpression": "RANK(SUM([Revenue]), 'desc')",
+    "targetDaxFormula": "RANKX(ALL(Sales), SUM([Revenue]), , DESC)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-006",
+    "sourceExpression": "CASE [Region] WHEN 'North' THEN [Revenue] * 1.1 WHEN 'South' THEN [Revenue] * 1.05 ELSE [Revenue] END",
+    "targetDaxFormula": "SWITCH([Region], \"North\", [Revenue] * 1.1, \"South\", [Revenue] * 1.05, [Revenue])",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-007",
+    "sourceExpression": "LOOKUP(SUM([Revenue]), -1)",
+    "targetDaxFormula": "VAR CurrentIndex = MAX(Sales[Index])\nRETURN CALCULATE(SUM([Revenue]), Sales[Index] = CurrentIndex - 1)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-008",
+    "sourceExpression": "COUNTD([Customer ID])",
+    "targetDaxFormula": "DISTINCTCOUNT([Customer ID])",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-009",
+    "sourceExpression": "LEFT([Product Name], 5) + '-' + RIGHT([Product Code], 3)",
+    "targetDaxFormula": "LEFT([Product Name], 5) & \"-\" & RIGHT([Product Code], 3)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "tableau-010",
+    "sourceExpression": "DATETRUNC('month', [Order Date])",
+    "targetDaxFormula": "DATE(YEAR([Order Date]), MONTH([Order Date]), 1)",
+    "correctedDaxFormula": ""
+  }
+]

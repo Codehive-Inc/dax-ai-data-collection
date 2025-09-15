@@ -1,0 +1,11 @@
+# FastAPI Gateway Requirements
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+httpx==0.25.2
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Optional: For enhanced features
+python-jose[cryptography]==3.3.0  # For JWT authentication
+slowapi==0.1.9  # For rate limiting
+prometheus-fastapi-instrumentator==6.1.0  # For monitoring

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cognos-001",
+    "sourceExpression": "[Sales].[Revenue] / [Sales].[Units]",
+    "targetDaxFormula": "DIVIDE([Revenue], [Units])",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-002",
+    "sourceExpression": "if ([Product].[Category] = 'Electronics') then ([Sales].[Revenue]) else (0)",
+    "targetDaxFormula": "IF([Category] = \"Electronics\", [Revenue], 0)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-003",
+    "sourceExpression": "total([Sales].[Revenue] for [Time].[Year])",
+    "targetDaxFormula": "CALCULATE(SUM([Revenue]), ALLEXCEPT(Sales, Sales[Year]))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-004",
+    "sourceExpression": "running-total([Sales].[Revenue] for [Time].[Date])",
+    "targetDaxFormula": "CALCULATE(SUM([Revenue]), FILTER(ALL(Sales), Sales[Date] <= MAX(Sales[Date])))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-005",
+    "sourceExpression": "rank([Sales].[Revenue] for [Product].[Name])",
+    "targetDaxFormula": "RANKX(ALL(Sales), [Revenue], , DESC)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-006",
+    "sourceExpression": "case when [Sales].[Revenue] > 1000000 then 'High' when [Sales].[Revenue] > 500000 then 'Medium' else 'Low' end",
+    "targetDaxFormula": "SWITCH(TRUE(), [Revenue] > 1000000, \"High\", [Revenue] > 500000, \"Medium\", \"Low\")",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-007",
+    "sourceExpression": "maximum([Sales].[Revenue] for [Product].[Category])",
+    "targetDaxFormula": "CALCULATE(MAX([Revenue]), ALLEXCEPT(Sales, Sales[Category]))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-008",
+    "sourceExpression": "[Sales].[Revenue] - lag([Sales].[Revenue], 1 for [Time].[Month])",
+    "targetDaxFormula": "VAR CurrentRevenue = SUM([Revenue])\nVAR PreviousRevenue = CALCULATE(SUM([Revenue]), DATEADD('Date'[Date], -1, MONTH))\nRETURN CurrentRevenue - PreviousRevenue",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-009",
+    "sourceExpression": "count([Customer].[CustomerID] for [Product].[Category])",
+    "targetDaxFormula": "CALCULATE(DISTINCTCOUNT([CustomerID]), ALLEXCEPT(Sales, Sales[Category]))",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "cognos-010",
+    "sourceExpression": "substring([Product].[Name], 1, 3) + '-' + [Product].[Code]",
+    "targetDaxFormula": "LEFT([Name], 3) & \"-\" & [Code]",
+    "correctedDaxFormula": ""
+  }
+]
