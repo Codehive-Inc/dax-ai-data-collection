@@ -331,3 +331,4 @@ docker compose up -d
 - **Weekly**: Check logs and clean up old images
 - **Monthly**: Update base images and dependencies
 - **Quarterly**: Review security updates and backup procedures
+

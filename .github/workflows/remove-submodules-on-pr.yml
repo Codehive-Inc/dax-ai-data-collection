@@ -1,0 +1,104 @@
+name: Remove Submodules on PR
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  remove-submodules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Check if submodules exist
+        id: check_submodules
+        run: |
+          if [ -f .gitmodules ]; then
+            echo "submodules_exist=true" >> $GITHUB_OUTPUT
+            echo "Found .gitmodules file"
+          else
+            echo "submodules_exist=false" >> $GITHUB_OUTPUT
+            echo "No .gitmodules file found"
+          fi
+
+      - name: Remove submodules
+        if: steps.check_submodules.outputs.submodules_exist == 'true'
+        run: |
+          echo "Removing git submodules..."
+          
+          # Get list of submodules
+          git submodule status | while read line; do
+            submodule_path=$(echo "$line" | awk '{print $2}')
+            echo "Processing submodule: $submodule_path"
+            
+            # Remove submodule entry from .gitmodules
+            git config -f .gitmodules --remove-section "submodule.$submodule_path" || true
+            
+            # Remove submodule entry from .git/config
+            git config --remove-section "submodule.$submodule_path" || true
+            
+            # Remove submodule from index
+            git rm --cached "$submodule_path" || true
+            
+            # Remove submodule directory
+            rm -rf "$submodule_path"
+            
+            # Clean up .git/modules
+            rm -rf ".git/modules/$submodule_path"
+          done
+          
+          # Remove .gitmodules if empty
+          if [ ! -s .gitmodules ]; then
+            rm -f .gitmodules
+            git rm --cached .gitmodules || true
+          fi
+
+      - name: Commit changes
+        if: steps.check_submodules.outputs.submodules_exist == 'true'
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Remove git submodules before merge to main
+
+            - Removed cognos-reference submodule
+            - Removed dax-api submodule
+            - Removed django-api-reference submodule
+            - Cleaned up .gitmodules and git configuration
+            
+            [automated by GitHub Actions]"
+            
+            git push origin ${{ github.head_ref }}
+            echo "✅ Submodules removed and changes pushed"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Submodule Removal Summary" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_submodules.outputs.submodules_exist }}" == "true" ]; then
+            echo "✅ Git submodules have been removed from this PR" >> $GITHUB_STEP_SUMMARY
+            echo "- cognos-reference submodule removed" >> $GITHUB_STEP_SUMMARY
+            echo "- dax-api submodule removed" >> $GITHUB_STEP_SUMMARY
+            echo "- django-api-reference submodule removed" >> $GITHUB_STEP_SUMMARY
+            echo "- .gitmodules file cleaned up" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No submodules found in this PR" >> $GITHUB_STEP_SUMMARY
+          fi
