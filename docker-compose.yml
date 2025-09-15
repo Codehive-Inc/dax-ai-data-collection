@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # React Frontend
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dax-curation-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_MSTR_API_URL=http://localhost:8080
+      - REACT_APP_API_BASE_URL=http://localhost:3001
+    depends_on:
+      - mstr-dax-api
+    networks:
+      - dax-network
+    restart: unless-stopped
+
+  # MicroStrategy DAX API
+  mstr-dax-api:
+    build:
+      context: ./microstrategy-dax-api
+      dockerfile: Dockerfile
+    container_name: mstr-dax-api
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - ENVIRONMENT=production
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:80
+    volumes:
+      - ./microstrategy-dax-api/data:/app/data
+      - ./microstrategy-dax-api/logs:/app/logs
+    networks:
+      - dax-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  dax-network:
+    driver: bridge
+
+volumes:
+  mstr-data:
+    driver: local
+  mstr-logs:
+    driver: local
