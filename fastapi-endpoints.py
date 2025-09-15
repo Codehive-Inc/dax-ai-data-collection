@@ -43,12 +43,14 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: Message
 
+
 # Configuration for your 3 different model endpoints
 MODEL_ENDPOINTS = {
     "cognos": "http://your-cognos-api:8001",
     "microstrategy": "http://your-mstr-api:8002", 
     "tableau": "http://your-tableau-api:8003"
 }
+
 
 @app.post("/api/v1/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
@@ -299,6 +301,8 @@ TO USE THIS GATEWAY API:
    to the appropriate model based on the current migration path.
 
 TESTING:
+
+# Chat with AI
 curl -X POST "http://localhost:3001/api/v1/chat" \
      -H "Content-Type: application/json" \
      -d '{
@@ -308,6 +312,34 @@ curl -X POST "http://localhost:3001/api/v1/chat" \
          {"role": "user", "content": "Convert this expression: Sum(Revenue)"}
        ]
      }'
+
+# Get examples
+curl -X GET "http://localhost:3001/api/v1/examples/microstrategy"
+
+# Add new example
+curl -X POST "http://localhost:3001/api/v1/examples/add" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "modelType": "microstrategy",
+       "example": {
+         "id": "mstr-new-001",
+         "sourceExpression": "Sum(Revenue){~+}",
+         "targetDaxFormula": "CALCULATE(SUM([Revenue]), ALL())",
+         "correctedDaxFormula": ""
+       }
+     }'
+
+# Update corrected DAX
+curl -X POST "http://localhost:3001/api/v1/examples/update-correction" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "modelType": "microstrategy",
+       "exampleId": "mstr-001",
+       "correctedDaxFormula": "VAR Total = SUM([Revenue]) RETURN Total"
+     }'
+
+# List backups
+curl -X GET "http://localhost:3001/api/v1/backups/microstrategy"
 """
 
 if __name__ == "__main__":
