@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI Model Fine-Tuning Curation App
 
 A comprehensive React-based web application for curating and refining AI-generated DAX formulas for BI migration projects. This tool enables BI developers to interactively correct AI model outputs, add new examples, and manage training datasets with persistent file storage.
@@ -282,3 +283,7 @@ chmod +x start-backend.sh
 ---
 
 **Built with ❤️ for the BI migration community**
+=======
+# dax-ai-data-collection
+dax-ai-data-collection
+>>>>>>> c0ca236d40f1e462369b5287ca5b18f860b7d57f
