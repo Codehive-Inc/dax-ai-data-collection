@@ -12,7 +12,7 @@ const api = axios.create({
 // Alternative: Direct model endpoints (if not using gateway)
 const MODEL_ENDPOINTS = {
   cognos: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8001',
-  microstrategy: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8002',
+  microstrategy: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8080',
   tableau: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8003'
 };
 
@@ -100,10 +100,9 @@ export const sendChatMessageDirect = async (modelType, messages) => {
       throw new Error(`No endpoint configured for model type: ${modelType}`);
     }
 
-    const response = await axios.post(`${modelUrl}/generate`, {
-      messages: messages,
-      max_tokens: 1000,
-      temperature: 0.1
+    const response = await axios.post(`${modelUrl}/api/chat`, {
+      model_type: modelType,
+      messages: messages
     }, {
       timeout: 30000,
       headers: { 'Content-Type': 'application/json' }
@@ -111,7 +110,10 @@ export const sendChatMessageDirect = async (modelType, messages) => {
     
     // Adapt response format to match expected structure
     let content = '';
-    if (response.data.choices && response.data.choices[0]) {
+    if (response.data.reply && response.data.reply.content) {
+      // Our new chat API format
+      content = response.data.reply.content;
+    } else if (response.data.choices && response.data.choices[0]) {
       // OpenAI-style response
       content = response.data.choices[0].message.content;
     } else if (response.data.generated_text) {

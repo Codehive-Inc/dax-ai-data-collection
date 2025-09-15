@@ -1,18 +1,32 @@
 // Data loading utilities
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
+const MSTR_API_URL = process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8080';
 
 export const loadExamples = async (modelType) => {
   try {
-    // Try to load from API first
-    const apiResponse = await fetch(`${API_BASE_URL}/api/v1/examples/${modelType}`);
-    if (apiResponse.ok) {
-      const data = await apiResponse.json();
-      return data.examples.map(example => ({
-        ...example,
-        correctedDaxFormula: example.correctedDaxFormula || '',
-        isUserAdded: false
-      }));
+    // For MicroStrategy, use the dedicated DAX API
+    if (modelType === 'microstrategy') {
+      const apiResponse = await fetch(`${MSTR_API_URL}/api/examples/${modelType}`);
+      if (apiResponse.ok) {
+        const data = await apiResponse.json();
+        return data.examples.map(example => ({
+          ...example,
+          correctedDaxFormula: example.correctedDaxFormula || '',
+          isUserAdded: false
+        }));
+      }
+    } else {
+      // Try to load from general API first for other model types
+      const apiResponse = await fetch(`${API_BASE_URL}/api/v1/examples/${modelType}`);
+      if (apiResponse.ok) {
+        const data = await apiResponse.json();
+        return data.examples.map(example => ({
+          ...example,
+          correctedDaxFormula: example.correctedDaxFormula || '',
+          isUserAdded: false
+        }));
+      }
     }
     
     // Fallback to direct file access
@@ -37,7 +51,12 @@ export const loadExamples = async (modelType) => {
 // Add new example via API
 export const addExampleToFile = async (modelType, example) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/examples/add`, {
+    // For MicroStrategy, use the dedicated DAX API
+    const apiUrl = modelType === 'microstrategy' 
+      ? `${MSTR_API_URL}/api/examples/add`
+      : `${API_BASE_URL}/api/v1/examples/add`;
+      
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,7 +83,12 @@ export const addExampleToFile = async (modelType, example) => {
 // Update corrected DAX formula via API
 export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/examples/update-correction`, {
+    // For MicroStrategy, use the dedicated DAX API
+    const apiUrl = modelType === 'microstrategy' 
+      ? `${MSTR_API_URL}/api/examples/update-correction`
+      : `${API_BASE_URL}/api/v1/examples/update-correction`;
+      
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
