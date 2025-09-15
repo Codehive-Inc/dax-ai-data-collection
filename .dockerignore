@@ -19,3 +19,4 @@ microstrategy-dax-api/data/backups/*
 microstrategy-dax-api/__pycache__
 microstrategy-dax-api/**/__pycache__
 microstrategy-dax-api/.env
+

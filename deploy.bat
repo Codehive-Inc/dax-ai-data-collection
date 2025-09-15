@@ -176,3 +176,4 @@ if /i "%view_logs%"=="y" (
 )
 
 pause
+
