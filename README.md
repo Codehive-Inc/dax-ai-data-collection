@@ -1,191 +1,287 @@
 # AI Model Fine-Tuning Curation App
 
-A React-based web application for curating and refining AI-generated DAX formulas for BI migration projects. This tool enables BI developers to interactively correct AI model outputs and export high-quality training datasets for fine-tuning.
+A comprehensive React-based web application for curating and refining AI-generated DAX formulas for BI migration projects. This tool enables BI developers to interactively correct AI model outputs, add new examples, and manage training datasets with persistent file storage.
 
-## Features
+![App Screenshot](https://via.placeholder.com/800x400/2c3e50/ffffff?text=DAX+Curation+App)
 
-- **Multi-Model Support**: Three distinct migration paths:
-  - Cognos to Power BI (`/cognos-to-pbi`)
-  - MicroStrategy to Power BI (`/microstrategy-to-pbi`) 
-  - Tableau to Power BI (`/tableau-to-pbi`)
+## 🚀 Features
 
-- **Two-Pane Interface**:
-  - Left pane: List of migration examples with source expressions, initial DAX formulas, and corrected versions
-  - Right pane: Conversational AI chat interface for iterative refinement
+### **Multi-Model Support**
+- **Cognos to Power BI** (`/cognos-to-pbi`)
+- **MicroStrategy to Power BI** (`/microstrategy-to-pbi`) 
+- **Tableau to Power BI** (`/tableau-to-pbi`)
 
-- **Interactive Curation**:
-  - Chat with AI to refine DAX formulas
-  - Copy code blocks with one click
-  - "Use as Corrected DAX" button to update examples
-  - Visual feedback for corrected examples
+### **Interactive Curation Interface**
+- **Two-pane layout**: Example list + Chat interface
+- **Real-time chat** with AI for DAX refinement
+- **"Use as Corrected DAX"** functionality for code blocks
+- **Visual indicators** for user-added vs. original examples
 
-- **Export Functionality**:
-  - Generate JSONL files ready for OpenAI fine-tuning
-  - Automatic filtering of refined examples
-  - Timestamped file naming
+### **Persistent File Storage**
+- **FastAPI backend** for file management
+- **Direct JSON file updates** - changes saved to actual files
+- **Automatic backups** before any modifications
+- **Latest 10 examples** limit per model type
+- **Real-time synchronization** across users
 
-## Getting Started
+### **Add New Examples**
+- **Modal interface** for adding new migration examples
+- **Immediate file persistence** via API
+- **Automatic reload** to show updated examples
 
-### Prerequisites
+## 🏗️ Architecture
 
-- Node.js (version 14 or higher)
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   React App     │───▶│   FastAPI        │───▶│   JSON Files    │
+│   (Frontend)    │    │   (Backend)      │    │   (Storage)     │
+│   Port 3000     │    │   Port 3001      │    │   public/data/  │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+## 🛠️ Installation & Setup
+
+### **Prerequisites**
+- Node.js (v14+)
+- Python 3.8+
 - npm or yarn
 
-### Installation
+### **1. Clone Repository**
+```bash
+git clone <repository-url>
+cd dax-ai-data-collection
+```
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd dax-ai-data-collection
-   ```
+### **2. Install Frontend Dependencies**
+```bash
+npm install
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### **3. Install Backend Dependencies**
+```bash
+# Option 1: Using the startup script
+chmod +x start-backend.sh
+./start-backend.sh
 
-3. Start the development server:
-   ```bash
-   npm start
-   ```
+# Option 2: Manual setup
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements-backend.txt
+```
 
-4. Open your browser and navigate to `http://localhost:3000`
+### **4. Start Both Services**
 
-### Backend API (Optional)
+**Terminal 1 (Backend):**
+```bash
+./start-backend.sh
+# OR manually:
+# source venv/bin/activate
+# python file-management-api.py
+```
 
-The app includes a fallback mock API for development. To use a real backend:
+**Terminal 2 (Frontend):**
+```bash
+npm start
+```
 
-1. Set up your backend API endpoint at `/api/v1/chat`
-2. Configure the API base URL in your environment:
-   ```bash
-   REACT_APP_API_BASE_URL=http://your-backend-url
-   ```
+### **5. Access the Application**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **API Docs**: http://localhost:3001/docs
 
-The expected API contract:
+## 📁 Project Structure
 
-**POST /api/v1/chat**
+```
+dax-ai-data-collection/
+├── public/
+│   ├── data/                          # JSON example files
+│   │   ├── cognos-examples.json
+│   │   ├── microstrategy-examples.json
+│   │   └── tableau-examples.json
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── CurationApp.js            # Main application
+│   │   ├── ExamplesList.js           # Left pane - examples
+│   │   ├── ChatInterface.js          # Right pane - chat
+│   │   ├── AddExampleModal.js        # Add new example modal
+│   │   └── Toast.js                  # Notifications
+│   ├── utils/
+│   │   ├── dataUtils.js              # API integration
+│   │   └── apiUtils.js               # Chat API utilities
+│   ├── App.js                        # Router setup
+│   ├── index.js                      # Entry point
+│   └── index.css                     # Global styles
+├── backups/                          # Automatic backups
+├── file-management-api.py            # FastAPI backend
+├── requirements-backend.txt          # Python dependencies
+├── start-backend.sh                  # Backend startup script
+└── package.json                      # Node.js dependencies
+```
+
+## 🔧 API Endpoints
+
+### **File Management**
+- `GET /api/v1/examples/{model_type}` - Get all examples
+- `POST /api/v1/examples/add` - Add new example
+- `POST /api/v1/examples/update-correction` - Update corrected DAX
+- `GET /api/v1/backups/{model_type}` - List backups
+- `DELETE /api/v1/examples/{model_type}` - Reset examples
+
+### **AI Chat**
+- `POST /api/v1/chat` - Chat with AI model
+
+### **Health Check**
+- `GET /health` - Service health status
+
+## 📊 Usage Workflow
+
+### **1. Select Migration Path**
+Navigate to one of the three migration routes based on your source system.
+
+### **2. Add New Examples**
+1. Click **"+ Add New Example"**
+2. Fill in source expression and target DAX formula
+3. Click **"Add Example"** - saves directly to JSON file
+
+### **3. Curate Existing Examples**
+1. Click on any example in the left pane
+2. Use the chat interface to refine the DAX formula
+3. Click **"Use as Corrected DAX"** on improved formulas
+4. Changes are automatically saved to the file
+
+### **4. View Results**
+- Examples are limited to latest 10 per model type
+- Automatic backups created before any changes
+- Real-time updates across all users
+
+## 🔒 Data Management
+
+### **File Storage**
+- **Location**: `public/data/{model}-examples.json`
+- **Format**: JSON array of example objects
+- **Limit**: Maximum 10 examples per file (latest kept)
+
+### **Backup System**
+- **Location**: `backups/` directory
+- **Format**: `{model}-examples-{timestamp}.json`
+- **Trigger**: Before any file modification
+
+### **Example Structure**
 ```json
 {
-  "model_type": "cognos | microstrategy | tableau",
-  "messages": [
-    {"role": "system", "content": "..."},
-    {"role": "user", "content": "..."},
-    {"role": "assistant", "content": "..."}
-  ]
+  "id": "unique-identifier",
+  "sourceExpression": "Original BI tool expression",
+  "targetDaxFormula": "Initial AI conversion",
+  "correctedDaxFormula": "User-refined version"
 }
 ```
 
-Response:
-```json
-{
-  "reply": {
-    "role": "assistant", 
-    "content": "AI response with DAX code blocks"
-  }
-}
+## 🚀 Deployment
+
+### **Development**
+```bash
+# Start both services locally
+./start-backend.sh    # Terminal 1
+npm start            # Terminal 2
 ```
 
-## Usage
+### **Production**
+```bash
+# Build React app
+npm run build
 
-### Loading Examples
+# Serve with FastAPI
+pip install fastapi uvicorn
+uvicorn file-management-api:app --host 0.0.0.0 --port 3001
 
-The app loads migration examples from JSONL files in the `public/data/` directory:
-- `cognos-examples.jsonl`
-- `microstrategy-examples.jsonl` 
-- `tableau-examples.jsonl`
-
-Each JSONL file contains one JSON object per line in OpenAI fine-tuning format:
-```json
-{"messages": [{"role": "system", "content": "You are an expert..."}, {"role": "user", "content": "Convert this expression: [expression]"}, {"role": "assistant", "content": "The equivalent DAX formula is:\n\n[DAX code]"}]}
+# Serve React build (use nginx, Apache, or similar)
 ```
 
-The app automatically extracts:
-- **Source Expression**: From the user message content
-- **Initial DAX Formula**: From the assistant message content (cleaned)
-- **Corrected DAX Formula**: Empty initially, filled by user corrections
-
-**Fallback Support**: The app also supports the legacy JSON format for backward compatibility.
-
-### Curation Workflow
-
-1. **Select a Migration Path**: Navigate to one of the three routes
-2. **Choose an Example**: Click on an example in the left pane
-3. **Chat with AI**: Use the chat interface to refine the DAX formula
-4. **Apply Corrections**: Click "Use as Corrected DAX" on improved formulas
-5. **Export Dataset**: Click "Prepare Final Dataset" to download the JSONL file
-
-### Exporting Training Data
-
-The export function:
-- Filters examples with corrected DAX formulas
-- Excludes examples where corrected formula equals initial formula
-- Formats data as JSONL for OpenAI fine-tuning
-- Includes appropriate system prompts for each model type
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── CurationApp.js      # Main application component
-│   ├── ExamplesList.js     # Left pane - examples list
-│   ├── ChatInterface.js    # Right pane - chat interface
-│   └── Toast.js           # Toast notifications
-├── utils/
-│   ├── dataUtils.js       # Data loading and export functions
-│   └── apiUtils.js        # API communication utilities
-├── App.js                 # Router setup
-├── index.js              # Application entry point
-└── index.css             # Global styles
-
-public/
-└── data/                 # Example data files
-    ├── cognos-examples.json
-    ├── microstrategy-examples.json
-    └── tableau-examples.json
+### **Docker (Optional)**
+```dockerfile
+# Dockerfile example for backend
+FROM python:3.9
+WORKDIR /app
+COPY requirements-backend.txt .
+RUN pip install -r requirements-backend.txt
+COPY file-management-api.py .
+EXPOSE 3001
+CMD ["python", "file-management-api.py"]
 ```
 
-## Customization
+## 🔧 Configuration
 
-### Adding New Migration Paths
+### **Environment Variables**
+```bash
+# React (.env)
+REACT_APP_API_BASE_URL=http://localhost:3001
 
-1. Add a new route in `App.js`
-2. Create corresponding example data file in `public/data/`
-3. Update the `modelTypeLabels` and `systemPrompts` in the respective components
+# FastAPI
+DATA_DIR=public/data
+BACKUP_DIR=backups
+```
 
-### Styling
+### **Customization**
+- **Add new model types**: Update model validation in backend
+- **Change example limit**: Modify `max_examples` parameter
+- **Custom AI integration**: Replace mock chat responses
+- **Styling**: Edit CSS classes in `src/index.css`
 
-The app uses CSS classes for styling. Key classes:
-- `.example-item` - Individual example cards
-- `.message` - Chat messages
-- `.code-block` - Code block containers
-- `.btn` - Button styles
-
-### DAX Detection
-
-The chat interface automatically detects DAX formulas using keywords and patterns. Modify the `isDaxFormula` logic in `ChatInterface.js` to adjust detection sensitivity.
-
-## Development
-
-### Available Scripts
-
-- `npm start` - Start development server
-- `npm build` - Build for production
-- `npm test` - Run tests
-- `npm eject` - Eject from Create React App
-
-### Environment Variables
-
-- `REACT_APP_API_BASE_URL` - Backend API base URL (defaults to localhost:3001)
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### **Common Issues**
+
+**Backend not starting:**
+```bash
+# Check Python version
+python --version  # Should be 3.8+
+
+# Reinstall dependencies
+pip install -r requirements-backend.txt
+```
+
+**Frontend build errors:**
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**File permission errors:**
+```bash
+# Make startup script executable
+chmod +x start-backend.sh
+```
+
+### **Getting Help**
+- Check the [Issues](../../issues) page
+- Review API documentation at http://localhost:3001/docs
+- Examine browser console for frontend errors
+- Check backend logs for API errors
+
+## 🎯 Roadmap
+
+- [ ] Real AI model integration (OpenAI, Azure OpenAI)
+- [ ] User authentication and permissions
+- [ ] Advanced DAX validation
+- [ ] Export to multiple formats (JSONL, CSV, Excel)
+- [ ] Batch import functionality
+- [ ] Advanced search and filtering
+- [ ] Analytics dashboard for curation progress
+
+---
+
+**Built with ❤️ for the BI migration community**
