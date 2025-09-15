@@ -191,3 +191,4 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Opening logs... (Press Ctrl+C to exit)"
     docker compose logs -f
 fi
+
