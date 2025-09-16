@@ -57,12 +57,12 @@ if (CONFIG.DEBUG) {
 }
 
 
-// Direct model endpoints (each model runs as separate FastAPI service)
+// Direct model endpoints (proxied through Nginx in Docker deployment)
 
 const MODEL_ENDPOINTS = {
-  cognos: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8003',
-  microstrategy: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8001',
-  tableau: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8004'
+  cognos: process.env.REACT_APP_COGNOS_API_URL || '/api/cognos',
+  microstrategy: process.env.REACT_APP_MSTR_API_URL || '/api/mstr',
+  tableau: process.env.REACT_APP_TABLEAU_API_URL || '/api/tableau'
 };
 
 export const sendChatMessage = async (modelType, messages) => {
