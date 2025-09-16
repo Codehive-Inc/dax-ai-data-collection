@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+// Simple X icon component
+const XIcon = () => <span style={{ fontSize: '18px', fontWeight: 'bold' }}>×</span>;
 
 const AddExampleModal = ({ isOpen, onClose, onAdd, modelType }) => {
   const [formData, setFormData] = useState({
@@ -81,7 +82,7 @@ const AddExampleModal = ({ isOpen, onClose, onAdd, modelType }) => {
         <div className="modal-header">
           <h2>Add New {modelTypeLabels[modelType]} Example</h2>
           <button className="modal-close-btn" onClick={handleClose}>
-            <X size={20} />
+            <XIcon />
           </button>
         </div>
         

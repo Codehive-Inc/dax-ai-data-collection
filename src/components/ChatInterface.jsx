@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Copy, Check } from 'lucide-react';
+// Simple icon components
+const CopyIcon = () => <span style={{ fontSize: '14px' }}>📋</span>;
+const CheckIcon = () => <span style={{ fontSize: '14px' }}>✓</span>;
 
 const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, isLoading, disabled }) => {
   const [inputValue, setInputValue] = useState('');
@@ -78,7 +80,7 @@ const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, isLoading, di
                   onClick={() => copyToClipboard(cleanCode, blockId)}
                   style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                 >
-                  {copiedStates[blockId] ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedStates[blockId] ? <CheckIcon /> : <CopyIcon />}
                   {copiedStates[blockId] ? 'Copied!' : 'Copy'}
                 </button>
                 {isDaxFormula && (
