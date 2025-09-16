@@ -52,28 +52,27 @@ const apiCall = async (url, options = {}) => {
 
 export const loadExamples = async (modelType) => {
   try {
-    // For MicroStrategy, use the dedicated DAX API
+    // Determine API URL based on model type (each model has its own service)
+    let apiUrl;
     if (modelType === 'microstrategy') {
-      const apiResponse = await apiCall(`${CONFIG.MSTR_API_URL}/api/examples/${modelType}`);
-      if (apiResponse.ok) {
-        const data = await apiResponse.json();
-        return data.examples.map(example => ({
-          ...example,
-          correctedDaxFormula: example.correctedDaxFormula || '',
-          isUserAdded: false
-        }));
-      }
+      apiUrl = `${CONFIG.MSTR_API_URL}/api/examples/${modelType}`;
+    } else if (modelType === 'cognos') {
+      apiUrl = `${CONFIG.COGNOS_API_URL}/api/examples/${modelType}`;
+    } else if (modelType === 'tableau') {
+      apiUrl = `${CONFIG.TABLEAU_API_URL}/api/examples/${modelType}`;
     } else {
-      // Try to load from general API first for other model types
-      const apiResponse = await apiCall(`${CONFIG.API_BASE_URL}/api/v1/examples/${modelType}`);
-      if (apiResponse.ok) {
-        const data = await apiResponse.json();
-        return data.examples.map(example => ({
-          ...example,
-          correctedDaxFormula: example.correctedDaxFormula || '',
-          isUserAdded: false
-        }));
-      }
+      // Fallback for unknown model types
+      apiUrl = `${CONFIG.API_BASE_URL}/api/v1/examples/${modelType}`;
+    }
+
+    const apiResponse = await apiCall(apiUrl);
+    if (apiResponse.ok) {
+      const data = await apiResponse.json();
+      return data.examples.map(example => ({
+        ...example,
+        correctedDaxFormula: example.correctedDaxFormula || '',
+        isUserAdded: false
+      }));
     }
     
     // Fallback to direct file access
@@ -87,11 +86,12 @@ export const loadExamples = async (modelType) => {
       }));
     }
     
-    // If no specific file found, return sample data
-    return getSampleData(modelType);
+    // If no specific file found, return sample data with warning
+    console.warn(`No data source available for ${modelType}, using sample data`);
+    return getSampleData(modelType, true);
   } catch (error) {
     console.warn(`Could not load ${modelType} examples, using sample data:`, error);
-    return getSampleData(modelType);
+    return getSampleData(modelType, true);
   }
 };
 
@@ -168,7 +168,7 @@ export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormu
   }
 };
 
-const getSampleData = (modelType) => {
+const getSampleData = (modelType, isDummyData = false) => {
   const sampleData = {
     cognos: [
       {
@@ -225,6 +225,8 @@ const getSampleData = (modelType) => {
 
   return (sampleData[modelType] || sampleData.cognos).map(example => ({
     ...example,
-    correctedDaxFormula: ''
+    correctedDaxFormula: '',
+    isDummyData: isDummyData,
+    isUserAdded: false
   }));
 };

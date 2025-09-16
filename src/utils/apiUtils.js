@@ -197,21 +197,14 @@ export const sendChatMessageDirect = async (modelType, messages) => {
   }
 };
 
-// Wrapper function that tries real API first, falls back to mock
+// Wrapper function that goes directly to model APIs (no gateway)
 export const sendChatMessageWithFallback = async (modelType, messages) => {
   try {
-    // Try gateway API first
-    return await sendChatMessage(modelType, messages);
-  } catch (gatewayError) {
-    console.warn('Gateway API failed, trying direct model API:', gatewayError.message);
-    
-    try {
-      // Try direct model API
-      return await sendChatMessageDirect(modelType, messages);
-    } catch (directError) {
-      console.warn('Direct API failed, using mock response:', directError.message);
-      // Fall back to mock
-      return await mockChatResponse(modelType, messages);
-    }
+    // Go directly to model-specific API
+    return await sendChatMessageDirect(modelType, messages);
+  } catch (directError) {
+    console.warn('Direct API failed, using mock response:', directError.message);
+    // Fall back to mock
+    return await mockChatResponse(modelType, messages);
   }
 };

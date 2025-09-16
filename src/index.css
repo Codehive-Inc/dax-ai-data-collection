@@ -447,3 +447,24 @@ code {
 .example-item.user-added {
   border-left: 4px solid #28a745;
 }
+
+.dummy-data-badge {
+  background-color: #ffc107;
+  color: #212529;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  font-weight: 500;
+  border: 1px solid #ffb300;
+}
+
+.example-item.dummy-data {
+  border-left: 4px solid #ffc107;
+  background-color: #fff8e1;
+}
+
+.example-item.dummy-data .field-content {
+  opacity: 0.8;
+}
