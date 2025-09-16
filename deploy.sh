@@ -12,8 +12,8 @@ REPO_URL="git@github-profile2:Codehive-Inc/dax-ai-data-collection.git"
 PROJECT_DIR="dax-ai-data-collection"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
-# Environment configuration
-ENV_FILE="${ENV_FILE:-env.docker}"
+# Environment configuration (optional)
+ENV_FILE="${ENV_FILE:-.env.example}"
 
 echo -e "${BLUE}========================================"
 echo -e "  DAX AI Data Collection - Docker Deploy"
