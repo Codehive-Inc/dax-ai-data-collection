@@ -45,8 +45,8 @@ const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax,
   };
 
   const renderMessageContent = (content, messageIndex) => {
-    // Simple code block detection - looking for DAX-like patterns
-    const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+    // Only detect proper code blocks with triple backticks (```), ignore single backticks
+    const codeBlockRegex = /```[\w]*\n?[\s\S]*?\n?```/g;
     const parts = content.split(codeBlockRegex);
     const codeBlocks = content.match(codeBlockRegex) || [];
     
@@ -55,18 +55,23 @@ const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax,
     
     for (let i = 0; i < parts.length; i++) {
       if (parts[i]) {
-        result.push(<span key={`text-${i}`}>{parts[i]}</span>);
+        // Render regular text with line breaks preserved
+        result.push(
+          <span key={`text-${i}`} style={{ whiteSpace: 'pre-wrap' }}>
+            {parts[i]}
+          </span>
+        );
       }
       
       if (codeBlockIndex < codeBlocks.length) {
         const codeBlock = codeBlocks[codeBlockIndex];
-        const cleanCode = codeBlock.replace(/```[\w]*\n?/g, '').replace(/```/g, '').replace(/`/g, '');
+        const cleanCode = codeBlock.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
         const blockId = `${messageIndex}-${codeBlockIndex}`;
         
         // Check if this looks like a DAX formula (contains DAX keywords or patterns)
-        const isDaxFormula = /\b(CALCULATE|SUM|AVERAGE|COUNT|IF|SWITCH|VAR|RETURN|FILTER|ALL|RELATED)\b/i.test(cleanCode) ||
+        const isDaxFormula = /\b(CALCULATE|SUM|AVERAGE|COUNT|IF|SWITCH|VAR|RETURN|FILTER|ALL|RELATED|SEARCH|BLANK)\b/i.test(cleanCode) ||
                            cleanCode.includes('=') ||
-                           cleanCode.length > 10;
+                           (cleanCode.length > 10 && /[A-Z]+\s*\(/.test(cleanCode));
         
         result.push(
           <div key={`code-${codeBlockIndex}`} className="code-block">
