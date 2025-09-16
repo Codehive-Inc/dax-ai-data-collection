@@ -208,3 +208,39 @@ export const sendChatMessageWithFallback = async (modelType, messages) => {
     return await mockChatResponse(modelType, messages);
   }
 };
+
+// New function for structured DAX correction
+export const correctDaxFormula = async (modelType, sourceExpression, targetDaxFormula) => {
+  try {
+    // Determine API URL based on model type
+    let apiUrl;
+    if (modelType === 'microstrategy') {
+      apiUrl = `${MODEL_ENDPOINTS.microstrategy}/api/dax/correct`;
+    } else if (modelType === 'cognos') {
+      apiUrl = `${MODEL_ENDPOINTS.cognos}/api/dax/correct`;
+    } else if (modelType === 'tableau') {
+      apiUrl = `${MODEL_ENDPOINTS.tableau}/api/dax/correct`;
+    } else {
+      apiUrl = `${CONFIG.API_BASE_URL}/api/dax/correct`;
+    }
+
+    const response = await axios.post(apiUrl, {
+      model_type: modelType,
+      source_expression: sourceExpression,
+      target_dax_formula: targetDaxFormula
+    }, {
+      timeout: CONFIG.API_TIMEOUT,
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`DAX correction error: ${error.response.data.error_message || error.response.statusText}`);
+    } else if (error.request) {
+      throw new Error('No response from DAX correction service. Please check if the backend is running.');
+    } else {
+      throw new Error(`Request error: ${error.message}`);
+    }
+  }
+};
