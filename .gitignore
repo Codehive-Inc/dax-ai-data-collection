@@ -61,4 +61,4 @@ ENV/
 # backups/
 
 # Local environment variables
-.env
+#.env
