@@ -1,57 +1,62 @@
-version: '3.8'
+name: daxaicollection
 
 services:
-  # React Frontend
-  react-app:
+  # React Frontend - Data Collection
+  dax-ai-data-collection:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: dax-curation-frontend
+    container_name: dax-ai-data-collection
+    env_file:
+      - ./.env.data-collection
     ports:
       - "3000:80"
-    environment:
-      # API Base URLs
-      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-http://localhost:3001}
-      - REACT_APP_MSTR_API_URL=${REACT_APP_MSTR_API_URL:-http://localhost:8080}
-      - REACT_APP_COGNOS_API_URL=${REACT_APP_COGNOS_API_URL:-http://localhost:8001}
-      - REACT_APP_TABLEAU_API_URL=${REACT_APP_TABLEAU_API_URL:-http://localhost:8003}
-      # Configuration
-      - REACT_APP_ENV=${REACT_APP_ENV:-docker}
-      - REACT_APP_DEBUG=${REACT_APP_DEBUG:-false}
-      - REACT_APP_API_TIMEOUT=${REACT_APP_API_TIMEOUT:-30000}
-    depends_on:
-      - fastapi-gateway
-    networks:
-      - dax-network
-    restart: unless-stopped
 
-  # FastAPI Gateway
-  fastapi-gateway:
-    build:
-      context: .
-      dockerfile: Dockerfile.fastapi
-    container_name: dax-fastapi-gateway
-    ports:
-      - "3001:3001"
-    environment:
-      - PORT=3001
-      - HOST=0.0.0.0
-      - ENVIRONMENT=production
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:80
-      - DATA_DIR=/app/data
-      - BACKUP_DIR=/app/backups
-    volumes:
-      - ./public/data:/app/data
-      - ./backups:/app/backups
+    restart: always
+    depends_on:
+      - mstr-dax-api
+      - cognos-dax-api
+      - tableau-dax-api
+
     networks:
       - dax-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
+
+  # MicroStrategy DAX API (placeholder - replace with actual service)
+  mstr-dax-api:
+    image: daxaicollection-microstrategy-dax-api:latest
+    container_name: mstr-dax-api
+    env_file:
+      - ./.env.microstrategy-api
+    ports:
+      - "8001:8001"
+    restart: always
+    networks:
+      - dax-network
+
+  # Cognos DAX API (placeholder - replace with actual service)
+  cognos-dax-api:
+    image: daxaicollection-cognos-dax-api:latest
+    container_name: cognos-dax-api
+    env_file:
+      - ./.env.cognos-dax-api
+    ports:
+      - "8003:8003"
+    restart: always
+    networks:
+      - dax-network
+
+  # Tableau DAX API (placeholder - replace with actual service)
+  tableau-dax-api:
+    image: daxaicollection-bi-migrator-dax-api:latest
+    container_name: tableau-dax-api
+    env_file:
+      - ./.env.tableau-api
+    ports:
+      - "8004:8004"
+    restart: always
+    networks:
+      - dax-network
+
 
 networks:
   dax-network:
