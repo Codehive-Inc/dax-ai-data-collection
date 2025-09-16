@@ -10,6 +10,9 @@ set PROJECT_DIR=dax-ai-data-collection
 set TIMESTAMP=%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
 set TIMESTAMP=%TIMESTAMP: =0%
 
+:: Environment configuration
+if not defined ENV_FILE set ENV_FILE=env.docker
+
 echo [%time%] Starting deployment process...
 echo.
 
@@ -89,11 +92,18 @@ echo.
 
 :: Create necessary directories
 echo [%time%] Creating necessary directories...
-if not exist "microstrategy-dax-api\data" mkdir "microstrategy-dax-api\data"
-if not exist "microstrategy-dax-api\data\examples" mkdir "microstrategy-dax-api\data\examples"
-if not exist "microstrategy-dax-api\data\backups" mkdir "microstrategy-dax-api\data\backups"
-if not exist "microstrategy-dax-api\logs" mkdir "microstrategy-dax-api\logs"
+if not exist "public\data" mkdir "public\data"
+if not exist "backups" mkdir "backups"
 echo ✓ Directories created
+
+:: Set up environment file
+echo [%time%] Setting up environment configuration...
+if exist "%ENV_FILE%" (
+    copy "%ENV_FILE%" ".env" >nul
+    echo ✓ Environment file copied from %ENV_FILE%
+) else (
+    echo ⚠ Environment file %ENV_FILE% not found, using defaults
+)
 echo.
 
 :: Build and start containers
@@ -125,13 +135,13 @@ timeout /t 10 /nobreak >nul
 echo [%time%] Checking service health...
 echo.
 
-:: Check MicroStrategy DAX API
-echo Checking MicroStrategy DAX API...
-curl -s http://localhost:8080/health >nul 2>&1
+:: Check FastAPI Gateway
+echo Checking FastAPI Gateway...
+curl -s http://localhost:3001/health >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✓ MicroStrategy DAX API is healthy
+    echo ✓ FastAPI Gateway is healthy
 ) else (
-    echo ⚠ MicroStrategy DAX API might still be starting...
+    echo ⚠ FastAPI Gateway might still be starting...
 )
 
 :: Check React Frontend
@@ -150,8 +160,8 @@ echo ========================================
 echo.
 echo 🌐 Services are now running:
 echo   • React Frontend:        http://localhost:3000
-echo   • MicroStrategy DAX API: http://localhost:8080
-echo   • API Documentation:     http://localhost:8080/docs
+echo   • FastAPI Gateway:       http://localhost:3001
+echo   • API Documentation:     http://localhost:3001/docs
 echo.
 echo 📊 Test the application:
 echo   • Cognos to Power BI:      http://localhost:3000/cognos-to-pbi
