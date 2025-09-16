@@ -85,15 +85,11 @@ if [ -d "$PROJECT_DIR" ]; then
     git fetch origin
     git reset --hard origin/main
     
-    # Update submodules
-    log "Updating submodules..."
-    git submodule update --init --recursive --remote
-    
-    # Switch to the correct branch in submodule
-    cd microstrategy-dax-api
-    git checkout 02_dax-chat-endpoints
-    git pull origin 02_dax-chat-endpoints
-    cd ..
+    # Update submodules (if any exist)
+    if [ -f .gitmodules ]; then
+        log "Updating submodules..."
+        git submodule update --init --recursive --remote
+    fi
     
 else
     log "Cloning repository..."
@@ -103,11 +99,6 @@ else
         exit 1
     fi
     cd "$PROJECT_DIR"
-    
-    # Ensure submodule is on correct branch
-    cd microstrategy-dax-api
-    git checkout 02_dax-chat-endpoints
-    cd ..
 fi
 
 success "Code updated successfully"
@@ -177,8 +168,8 @@ echo -e "========================================${NC}"
 echo
 echo -e "${BLUE}🌐 Services are now running:${NC}"
 echo "  • React Frontend:        http://localhost:3000"
-echo "  • MicroStrategy DAX API: http://localhost:8080"
-echo "  • API Documentation:     http://localhost:8080/docs"
+echo "  • FastAPI Gateway:       http://localhost:3001"
+echo "  • API Documentation:     http://localhost:3001/docs"
 echo
 echo -e "${BLUE}📊 Test the application:${NC}"
 echo "  • Cognos to Power BI:      http://localhost:3000/cognos-to-pbi"
