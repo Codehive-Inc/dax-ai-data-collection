@@ -1,13 +1,60 @@
 import axios from 'axios';
 
+// Environment configuration
+const CONFIG = {
+  API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
+  API_TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
+  DEBUG: process.env.REACT_APP_DEBUG === 'true',
+  ENV: process.env.REACT_APP_ENV || 'development'
+};
+
 // Configure axios defaults
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
-  timeout: 30000,
+  baseURL: CONFIG.API_BASE_URL,
+  timeout: CONFIG.API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json'
   }
 });
+
+// Add request interceptor for debugging
+if (CONFIG.DEBUG) {
+  api.interceptors.request.use(
+    (config) => {
+      console.log('🚀 API Request:', {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        baseURL: config.baseURL,
+        data: config.data
+      });
+      return config;
+    },
+    (error) => {
+      console.error('❌ API Request Error:', error);
+      return Promise.reject(error);
+    }
+  );
+
+  api.interceptors.response.use(
+    (response) => {
+      console.log('✅ API Response:', {
+        status: response.status,
+        url: response.config.url,
+        data: response.data
+      });
+      return response;
+    },
+    (error) => {
+      console.error('❌ API Response Error:', {
+        status: error.response?.status,
+        url: error.config?.url,
+        message: error.message,
+        data: error.response?.data
+      });
+      return Promise.reject(error);
+    }
+  );
+}
 
 // Alternative: Direct model endpoints (if not using gateway)
 const MODEL_ENDPOINTS = {
@@ -104,7 +151,7 @@ export const sendChatMessageDirect = async (modelType, messages) => {
       model_type: modelType,
       messages: messages
     }, {
-      timeout: 30000,
+      timeout: CONFIG.API_TIMEOUT,
       headers: { 'Content-Type': 'application/json' }
     });
     

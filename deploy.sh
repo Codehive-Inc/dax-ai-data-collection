@@ -12,6 +12,9 @@ REPO_URL="git@github-profile2:Codehive-Inc/dax-ai-data-collection.git"
 PROJECT_DIR="dax-ai-data-collection"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
+# Environment configuration
+ENV_FILE="${ENV_FILE:-env.docker}"
+
 echo -e "${BLUE}========================================"
 echo -e "  DAX AI Data Collection - Docker Deploy"
 echo -e "========================================${NC}"
@@ -112,10 +115,18 @@ echo
 
 # Create necessary directories
 log "Creating necessary directories..."
-mkdir -p microstrategy-dax-api/data/examples
-mkdir -p microstrategy-dax-api/data/backups
-mkdir -p microstrategy-dax-api/logs
+mkdir -p public/data
+mkdir -p backups
 success "Directories created"
+
+# Set up environment file
+log "Setting up environment configuration..."
+if [ -f "$ENV_FILE" ]; then
+    cp "$ENV_FILE" .env
+    success "Environment file copied from $ENV_FILE"
+else
+    warning "Environment file $ENV_FILE not found, using defaults"
+fi
 echo
 
 # Build and start containers
@@ -143,12 +154,12 @@ sleep 10
 log "Checking service health..."
 echo
 
-# Check MicroStrategy DAX API
-echo -n "Checking MicroStrategy DAX API... "
-if curl -s http://localhost:8080/health > /dev/null 2>&1; then
-    success "MicroStrategy DAX API is healthy"
+# Check FastAPI Gateway
+echo -n "Checking FastAPI Gateway... "
+if curl -s http://localhost:3001/health > /dev/null 2>&1; then
+    success "FastAPI Gateway is healthy"
 else
-    warning "MicroStrategy DAX API might still be starting..."
+    warning "FastAPI Gateway might still be starting..."
 fi
 
 # Check React Frontend
