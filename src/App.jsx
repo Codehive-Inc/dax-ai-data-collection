@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import CurationApp from './components/CurationApp';
+import CurationApp from './components/CurationApp.jsx';
 
 function App() {
   return (

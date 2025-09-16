@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ExamplesList from './ExamplesList';
-import ChatInterface from './ChatInterface';
-import Toast from './Toast';
-import AddExampleModal from './AddExampleModal';
+import ExamplesList from './ExamplesList.jsx';
+import ChatInterface from './ChatInterface.jsx';
+import Toast from './Toast.jsx';
+import AddExampleModal from './AddExampleModal.jsx';
 import { loadExamples, addExampleToFile, updateCorrectedDax } from '../utils/dataUtils';
 import { sendChatMessageWithFallback } from '../utils/apiUtils';
 
