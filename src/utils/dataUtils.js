@@ -3,9 +3,10 @@
 // Environment configuration
 const CONFIG = {
   API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
-  MSTR_API_URL: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8080',
-  COGNOS_API_URL: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8001',
-  TABLEAU_API_URL: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8003',
+
+  MSTR_API_URL: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8001',
+  COGNOS_API_URL: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8003',
+  TABLEAU_API_URL: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8004',
   API_TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
   DEBUG: process.env.REACT_APP_DEBUG === 'true'
 };
