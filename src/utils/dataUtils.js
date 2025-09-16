@@ -1,12 +1,13 @@
 // Data loading utilities
 
-// Environment configuration
+// Environment configuration for Docker deployment with Nginx proxy
 const CONFIG = {
   API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
 
-  MSTR_API_URL: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8001',
-  COGNOS_API_URL: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8003',
-  TABLEAU_API_URL: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8004',
+  // Use Nginx proxy paths for Docker deployment
+  MSTR_API_URL: process.env.REACT_APP_MSTR_API_URL || '/api/mstr',
+  COGNOS_API_URL: process.env.REACT_APP_COGNOS_API_URL || '/api/cognos',
+  TABLEAU_API_URL: process.env.REACT_APP_TABLEAU_API_URL || '/api/tableau',
   API_TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
   DEBUG: process.env.REACT_APP_DEBUG === 'true'
 };
