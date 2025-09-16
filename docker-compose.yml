@@ -10,47 +10,56 @@ services:
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_MSTR_API_URL=http://localhost:8080
-      - REACT_APP_API_BASE_URL=http://localhost:3001
+      # API Base URLs
+      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-http://localhost:3001}
+      - REACT_APP_MSTR_API_URL=${REACT_APP_MSTR_API_URL:-http://localhost:8080}
+      - REACT_APP_COGNOS_API_URL=${REACT_APP_COGNOS_API_URL:-http://localhost:8001}
+      - REACT_APP_TABLEAU_API_URL=${REACT_APP_TABLEAU_API_URL:-http://localhost:8003}
+      # Configuration
+      - REACT_APP_ENV=${REACT_APP_ENV:-docker}
+      - REACT_APP_DEBUG=${REACT_APP_DEBUG:-false}
+      - REACT_APP_API_TIMEOUT=${REACT_APP_API_TIMEOUT:-30000}
     depends_on:
-      - mstr-dax-api
+      - fastapi-gateway
     networks:
       - dax-network
     restart: unless-stopped
 
-  # MicroStrategy DAX API
-  mstr-dax-api:
+  # FastAPI Gateway
+  fastapi-gateway:
     build:
-      context: ./microstrategy-dax-api
-      dockerfile: Dockerfile
-    container_name: mstr-dax-api
+      context: .
+      dockerfile: Dockerfile.fastapi
+    container_name: dax-fastapi-gateway
     ports:
-      - "8080:8080"
+      - "3001:3001"
     environment:
-      - PORT=8080
+      - PORT=3001
       - HOST=0.0.0.0
       - ENVIRONMENT=production
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:80
+      - DATA_DIR=/app/data
+      - BACKUP_DIR=/app/backups
     volumes:
-      - ./microstrategy-dax-api/data:/app/data
-      - ./microstrategy-dax-api/logs:/app/logs
+      - ./public/data:/app/data
+      - ./backups:/app/backups
     networks:
       - dax-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 20s
 
 networks:
   dax-network:
     driver: bridge
 
 volumes:
-  mstr-data:
+  app-data:
     driver: local
-  mstr-logs:
+  app-backups:
     driver: local
 

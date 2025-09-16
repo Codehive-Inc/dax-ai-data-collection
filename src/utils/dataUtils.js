@@ -1,13 +1,59 @@
 // Data loading utilities
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
-const MSTR_API_URL = process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8080';
+// Environment configuration
+const CONFIG = {
+  API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001',
+  MSTR_API_URL: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8080',
+  COGNOS_API_URL: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8001',
+  TABLEAU_API_URL: process.env.REACT_APP_TABLEAU_API_URL || 'http://localhost:8003',
+  API_TIMEOUT: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
+  DEBUG: process.env.REACT_APP_DEBUG === 'true'
+};
+
+// Helper function for API calls with consistent error handling
+const apiCall = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
+
+  try {
+    if (CONFIG.DEBUG) {
+      console.log('🚀 Data API Call:', { url, options });
+    }
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    });
+
+    clearTimeout(timeoutId);
+
+    if (CONFIG.DEBUG) {
+      console.log('✅ Data API Response:', { 
+        url, 
+        status: response.status, 
+        ok: response.ok 
+      });
+    }
+
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (CONFIG.DEBUG) {
+      console.error('❌ Data API Error:', { url, error: error.message });
+    }
+    throw error;
+  }
+};
 
 export const loadExamples = async (modelType) => {
   try {
     // For MicroStrategy, use the dedicated DAX API
     if (modelType === 'microstrategy') {
-      const apiResponse = await fetch(`${MSTR_API_URL}/api/examples/${modelType}`);
+      const apiResponse = await apiCall(`${CONFIG.MSTR_API_URL}/api/examples/${modelType}`);
       if (apiResponse.ok) {
         const data = await apiResponse.json();
         return data.examples.map(example => ({
@@ -18,7 +64,7 @@ export const loadExamples = async (modelType) => {
       }
     } else {
       // Try to load from general API first for other model types
-      const apiResponse = await fetch(`${API_BASE_URL}/api/v1/examples/${modelType}`);
+      const apiResponse = await apiCall(`${CONFIG.API_BASE_URL}/api/v1/examples/${modelType}`);
       if (apiResponse.ok) {
         const data = await apiResponse.json();
         return data.examples.map(example => ({
@@ -30,7 +76,7 @@ export const loadExamples = async (modelType) => {
     }
     
     // Fallback to direct file access
-    const jsonResponse = await fetch(`/data/${modelType}-examples.json`);
+    const jsonResponse = await apiCall(`/data/${modelType}-examples.json`);
     if (jsonResponse.ok) {
       const data = await jsonResponse.json();
       return data.map(example => ({
@@ -51,16 +97,20 @@ export const loadExamples = async (modelType) => {
 // Add new example via API
 export const addExampleToFile = async (modelType, example) => {
   try {
-    // For MicroStrategy, use the dedicated DAX API
-    const apiUrl = modelType === 'microstrategy' 
-      ? `${MSTR_API_URL}/api/examples/add`
-      : `${API_BASE_URL}/api/v1/examples/add`;
+    // Determine API URL based on model type
+    let apiUrl;
+    if (modelType === 'microstrategy') {
+      apiUrl = `${CONFIG.MSTR_API_URL}/api/examples/add`;
+    } else if (modelType === 'cognos') {
+      apiUrl = `${CONFIG.COGNOS_API_URL}/api/examples/add`;
+    } else if (modelType === 'tableau') {
+      apiUrl = `${CONFIG.TABLEAU_API_URL}/api/examples/add`;
+    } else {
+      apiUrl = `${CONFIG.API_BASE_URL}/api/v1/examples/add`;
+    }
       
-    const response = await fetch(apiUrl, {
+    const response = await apiCall(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         modelType,
         example
@@ -83,16 +133,20 @@ export const addExampleToFile = async (modelType, example) => {
 // Update corrected DAX formula via API
 export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula) => {
   try {
-    // For MicroStrategy, use the dedicated DAX API
-    const apiUrl = modelType === 'microstrategy' 
-      ? `${MSTR_API_URL}/api/examples/update-correction`
-      : `${API_BASE_URL}/api/v1/examples/update-correction`;
+    // Determine API URL based on model type
+    let apiUrl;
+    if (modelType === 'microstrategy') {
+      apiUrl = `${CONFIG.MSTR_API_URL}/api/examples/update-correction`;
+    } else if (modelType === 'cognos') {
+      apiUrl = `${CONFIG.COGNOS_API_URL}/api/examples/update-correction`;
+    } else if (modelType === 'tableau') {
+      apiUrl = `${CONFIG.TABLEAU_API_URL}/api/examples/update-correction`;
+    } else {
+      apiUrl = `${CONFIG.API_BASE_URL}/api/v1/examples/update-correction`;
+    }
       
-    const response = await fetch(apiUrl, {
+    const response = await apiCall(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         modelType,
         exampleId,
