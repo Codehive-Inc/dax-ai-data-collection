@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 const CopyIcon = () => <span style={{ fontSize: '14px' }}>📋</span>;
 const CheckIcon = () => <span style={{ fontSize: '14px' }}>✓</span>;
 
-const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, isLoading, disabled }) => {
+const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax, isLoading, disabled }) => {
   const [inputValue, setInputValue] = useState('');
   const [copiedStates, setCopiedStates] = useState({});
   const messagesEndRef = useRef(null);
@@ -113,6 +113,22 @@ const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, isLoading, di
           <div key={index} className={`message ${message.role}`}>
             <div className="message-header">
               {message.role === 'user' ? 'You' : 'AI Assistant'}
+              {message.role === 'assistant' && onCorrectDax && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => onCorrectDax(message.content, index)}
+                  style={{ 
+                    marginLeft: 'auto', 
+                    padding: '0.25rem 0.5rem', 
+                    fontSize: '0.75rem',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                >
+                  🔧 Correct the DAX
+                </button>
+              )}
             </div>
             <div className="message-content">
               {renderMessageContent(message.content, index)}

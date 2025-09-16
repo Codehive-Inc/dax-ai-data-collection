@@ -4,7 +4,7 @@ import ChatInterface from './ChatInterface.jsx';
 import Toast from './Toast.jsx';
 import AddExampleModal from './AddExampleModal.jsx';
 import { loadExamples, addExampleToFile, updateCorrectedDax } from '../utils/dataUtils';
-import { sendChatMessageWithFallback } from '../utils/apiUtils';
+import { sendChatMessageWithFallback, correctDaxFormula } from '../utils/apiUtils';
 
 const CurationApp = ({ modelType }) => {
   const [examples, setExamples] = useState([]);
@@ -86,6 +86,50 @@ const CurationApp = ({ modelType }) => {
       }
     } catch (error) {
       showToast(`Error updating DAX formula: ${error.message}`, 'error');
+    }
+  }, [selectedExample, examples, selectedExampleId, modelType, showToast]);
+
+  const handleCorrectDax = useCallback(async (messageContent, messageIndex) => {
+    if (!selectedExample) return;
+
+    try {
+      setIsLoading(true);
+      showToast('Getting structured DAX correction...', 'info');
+
+      // Call FastAPI for structured DAX correction
+      const correctionResult = await correctDaxFormula(
+        modelType,
+        selectedExample.sourceExpression,
+        selectedExample.targetDaxFormula
+      );
+
+      if (correctionResult.success) {
+        // Update the corrected DAX formula
+        const result = await updateCorrectedDax(
+          modelType, 
+          selectedExampleId, 
+          correctionResult.corrected_dax_formula
+        );
+        
+        if (result.success) {
+          // Update local state
+          const updatedExamples = examples.map(ex => 
+            ex.id === selectedExampleId 
+              ? { ...ex, correctedDaxFormula: correctionResult.corrected_dax_formula }
+              : ex
+          );
+          setExamples(updatedExamples);
+          showToast(`DAX corrected! ${correctionResult.explanation}`);
+        } else {
+          showToast(`Error saving corrected DAX: ${result.message}`, 'error');
+        }
+      } else {
+        showToast(`Error correcting DAX: ${correctionResult.error_message}`, 'error');
+      }
+    } catch (error) {
+      showToast(`Error getting DAX correction: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
   }, [selectedExample, examples, selectedExampleId, modelType, showToast]);
 
@@ -171,6 +215,7 @@ const CurationApp = ({ modelType }) => {
             messages={chatMessages}
             onSendMessage={handleSendMessage}
             onUseDaxFormula={handleUseDaxFormula}
+            onCorrectDax={handleCorrectDax}
             isLoading={isLoading}
             disabled={!selectedExample}
           />
