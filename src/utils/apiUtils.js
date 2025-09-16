@@ -56,7 +56,9 @@ if (CONFIG.DEBUG) {
   );
 }
 
+
 // Direct model endpoints (each model runs as separate FastAPI service)
+
 const MODEL_ENDPOINTS = {
   cognos: process.env.REACT_APP_COGNOS_API_URL || 'http://localhost:8003',
   microstrategy: process.env.REACT_APP_MSTR_API_URL || 'http://localhost:8001',
