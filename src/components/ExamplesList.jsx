@@ -8,12 +8,17 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect }) => {
           key={example.id}
           className={`example-item ${selectedExampleId === example.id ? 'selected' : ''} ${
             example.isUserAdded ? 'user-added' : ''
-          }`}
+          } ${example.isDummyData ? 'dummy-data' : ''}`}
           onClick={() => onExampleSelect(example.id)}
         >
           {example.isUserAdded && (
             <div className="user-added-badge">
               User Added
+            </div>
+          )}
+          {example.isDummyData && (
+            <div className="dummy-data-badge">
+              ⚠️ Sample Data
             </div>
           )}
           <div className="example-field">

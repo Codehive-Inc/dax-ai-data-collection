@@ -43,7 +43,9 @@ const CurationApp = ({ modelType }) => {
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    // Show warning messages longer since they contain important information
+    const timeout = type === 'warning' ? 6000 : 3000;
+    setTimeout(() => setToast(null), timeout);
   }, []);
 
   const handleSendMessage = useCallback(async (message) => {
@@ -93,6 +95,15 @@ const CurationApp = ({ modelType }) => {
       setExamples(data);
       if (data.length > 0) {
         setSelectedExampleId(data[0].id);
+        
+        // Check if any examples are dummy data and show warning
+        const hasDummyData = data.some(example => example.isDummyData);
+        if (hasDummyData) {
+          showToast(
+            `⚠️ API connection failed. Showing sample data for demonstration. Connect to your ${modelType} API to see real examples.`,
+            'warning'
+          );
+        }
       }
     } catch (error) {
       showToast('Error loading examples: ' + error.message, 'error');
