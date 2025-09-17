@@ -10,10 +10,10 @@ services:
     ports:
       - "3000:3000"  # React app port (matches external deployment)
     environment:
-      # API Endpoints (consistent with your deployment)
-      - REACT_APP_MSTR_API_URL=http://localhost:8001
-      - REACT_APP_COGNOS_API_URL=http://localhost:8003
-      - REACT_APP_TABLEAU_API_URL=http://localhost:8004
+      # API Endpoints (using nginx proxy)
+      - REACT_APP_MSTR_API_URL=/api/mstr
+      - REACT_APP_COGNOS_API_URL=/api/cognos
+      - REACT_APP_TABLEAU_API_URL=/api/tableau
       - REACT_APP_DEBUG=false
       - REACT_APP_API_TIMEOUT=30000
     restart: always
@@ -28,8 +28,7 @@ services:
   mstr-dax-api:
     image: daxaicollection-microstrategy-dax-api:latest
     container_name: mstr-dax-api
-    ports:
-      - "8001:8001"
+    # Port removed - accessed through nginx proxy
     restart: always
     networks:
       - dax-network
