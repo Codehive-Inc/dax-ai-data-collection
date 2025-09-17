@@ -51,13 +51,21 @@ const CurationApp = ({ modelType }) => {
   const handleSendMessage = useCallback(async (message) => {
     if (!selectedExample) return;
 
-    const newMessages = [...chatMessages, { role: 'user', content: message }];
-    setChatMessages(newMessages);
+    // Add context about the current example to the message
+    const contextMessage = `Current Example Context:
+Source Expression: ${selectedExample.sourceExpression}
+Target DAX Formula: ${selectedExample.targetDaxFormula}
+Corrected DAX Formula: ${selectedExample.correctedDaxFormula || 'Not yet corrected'}
+
+User Message: ${message}`;
+
+    const newMessages = [...chatMessages, { role: 'user', content: contextMessage }];
+    setChatMessages([...chatMessages, { role: 'user', content: message }]); // Show only user message in UI
     setIsLoading(true);
 
     try {
       const response = await sendChatMessageWithFallback(modelType, newMessages);
-      setChatMessages([...newMessages, response.reply]);
+      setChatMessages([...chatMessages, { role: 'user', content: message }, response.reply]);
     } catch (error) {
       showToast('Error sending message: ' + error.message, 'error');
     } finally {
