@@ -14,11 +14,11 @@ RUN npm ci
 COPY . .
 
 # Set build-time environment variables (these will be baked into the build)
-ARG REACT_APP_API_BASE_URL=http://localhost:3001
-ARG REACT_APP_MSTR_API_URL=http://localhost:8001
-ARG REACT_APP_COGNOS_API_URL=http://localhost:8003
-ARG REACT_APP_TABLEAU_API_URL=http://localhost:8004
-ARG REACT_APP_ENV=docker
+ARG REACT_APP_API_BASE_URL=/api/mstr
+ARG REACT_APP_MSTR_API_URL=/api/mstr
+ARG REACT_APP_COGNOS_API_URL=/api/cognos
+ARG REACT_APP_TABLEAU_API_URL=/api/tableau
+ARG REACT_APP_ENV=production
 ARG REACT_APP_DEBUG=false
 ARG REACT_APP_API_TIMEOUT=30000
 
