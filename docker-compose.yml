@@ -37,8 +37,7 @@ services:
   cognos-dax-api:
     image: daxaicollection-cognos-dax-api:latest
     container_name: cognos-dax-api
-    ports:
-      - "8003:8003"
+    # Port removed - accessed through nginx proxy
     restart: always
     networks:
       - dax-network
@@ -47,8 +46,7 @@ services:
   tableau-dax-api:
     image: daxaicollection-bi-migrator-dax-api:latest
     container_name: tableau-dax-api
-    ports:
-      - "8004:8004"
+    # Port removed - accessed through nginx proxy
     restart: always
     networks:
       - dax-network
