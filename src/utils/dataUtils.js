@@ -71,6 +71,7 @@ export const loadExamples = async (modelType) => {
       return data.examples.map(example => ({
         ...example,
         correctedDaxFormula: example.correctedDaxFormula || '',
+        previousDaxFormula: example.previousDaxFormula || '', // ADDED: Handle new field
         isUserAdded: false
       }));
     }
@@ -82,6 +83,7 @@ export const loadExamples = async (modelType) => {
       return data.map(example => ({
         ...example,
         correctedDaxFormula: example.correctedDaxFormula || '',
+        previousDaxFormula: example.previousDaxFormula || '', // ADDED: Handle new field
         isUserAdded: false
       }));
     }
@@ -114,7 +116,10 @@ export const addExampleToFile = async (modelType, example) => {
       method: 'POST',
       body: JSON.stringify({
         modelType,
-        example
+        example: {
+          ...example,
+          previousDaxFormula: '' // ADDED: Initialize new field for new examples
+        }
       }),
     });
 
@@ -132,7 +137,7 @@ export const addExampleToFile = async (modelType, example) => {
 };
 
 // Update corrected DAX formula via API
-export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula) => {
+export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula, previousDaxFormula) => {
   try {
     // Determine API URL based on model type
     let apiUrl;
@@ -151,7 +156,8 @@ export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormu
       body: JSON.stringify({
         modelType,
         exampleId,
-        correctedDaxFormula
+        correctedDaxFormula,
+        previousDaxFormula // ADDED: Send the previous version to the backend
       }),
     });
 
@@ -226,6 +232,7 @@ const getSampleData = (modelType, isDummyData = false) => {
   return (sampleData[modelType] || sampleData.cognos).map(example => ({
     ...example,
     correctedDaxFormula: '',
+    previousDaxFormula: '', // ADDED: Initialize field for sample data
     isDummyData: isDummyData,
     isUserAdded: false
   }));
