@@ -71,7 +71,8 @@ export const loadExamples = async (modelType) => {
       return data.examples.map(example => ({
         ...example,
         correctedDaxFormula: example.correctedDaxFormula || '',
-        previousDaxFormula: example.previousDaxFormula || '', // ADDED: Handle new field
+        previousDaxFormula: example.previousDaxFormula || '',
+        confidence_score: example.confidence_score || null, // ADDED: Load confidence score
         isUserAdded: false
       }));
     }
@@ -83,7 +84,8 @@ export const loadExamples = async (modelType) => {
       return data.map(example => ({
         ...example,
         correctedDaxFormula: example.correctedDaxFormula || '',
-        previousDaxFormula: example.previousDaxFormula || '', // ADDED: Handle new field
+        previousDaxFormula: example.previousDaxFormula || '',
+        confidence_score: example.confidence_score || null, // ADDED: Load confidence score
         isUserAdded: false
       }));
     }
@@ -118,7 +120,8 @@ export const addExampleToFile = async (modelType, example) => {
         modelType,
         example: {
           ...example,
-          previousDaxFormula: '' // ADDED: Initialize new field for new examples
+          previousDaxFormula: '',
+          confidence_score: null, // ADDED: Initialize confidence score
         }
       }),
     });
@@ -137,7 +140,7 @@ export const addExampleToFile = async (modelType, example) => {
 };
 
 // Update corrected DAX formula via API
-export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula, previousDaxFormula) => {
+export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormula, previousDaxFormula, confidenceScore = null) => {
   try {
     // Determine API URL based on model type
     let apiUrl;
@@ -157,7 +160,8 @@ export const updateCorrectedDax = async (modelType, exampleId, correctedDaxFormu
         modelType,
         exampleId,
         correctedDaxFormula,
-        previousDaxFormula // ADDED: Send the previous version to the backend
+        previousDaxFormula, 
+        confidence_score: confidenceScore // ADDED: Send the confidence score
       }),
     });
 
@@ -232,7 +236,8 @@ const getSampleData = (modelType, isDummyData = false) => {
   return (sampleData[modelType] || sampleData.cognos).map(example => ({
     ...example,
     correctedDaxFormula: '',
-    previousDaxFormula: '', // ADDED: Initialize field for sample data
+    previousDaxFormula: '', 
+    confidence_score: null, // ADDED: Initialize confidence score for sample data
     isDummyData: isDummyData,
     isUserAdded: false
   }));
