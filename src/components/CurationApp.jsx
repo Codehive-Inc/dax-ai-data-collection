@@ -78,24 +78,30 @@ User Message: ${message}`;
   const handleUseDaxFormula = useCallback(async (daxFormula) => {
     if (!selectedExample) return;
 
-    // FIX: Only save the current corrected DAX as the previous version. 
-    // This will be '' for the first correction, preventing the "Edited" bug.
+    // FIX: Only save the current corrected DAX as the previous version if it exists.
     const oldCorrectedDax = selectedExample.correctedDaxFormula || ''; 
+    const existingConfidenceScore = selectedExample.confidence_score || null;
 
     try {
-      // Update via API, passing the old value as the previousDaxFormula
+      // Update via API, passing the old value as the previousDaxFormula and retaining the score
       const result = await updateCorrectedDax(
         modelType, 
         selectedExampleId, 
         daxFormula, 
-        oldCorrectedDax // Pass the current corrected DAX
+        oldCorrectedDax,
+        existingConfidenceScore
       );
       
       if (result.success) {
         // Update local state, setting the old DAX as the previous version
         const updatedExamples = examples.map(ex => 
           ex.id === selectedExampleId 
-            ? { ...ex, correctedDaxFormula: daxFormula, previousDaxFormula: oldCorrectedDax }
+            ? { 
+                ...ex, 
+                correctedDaxFormula: daxFormula, 
+                previousDaxFormula: oldCorrectedDax,
+                confidence_score: existingConfidenceScore
+              }
             : ex
         );
         setExamples(updatedExamples);
@@ -111,7 +117,7 @@ User Message: ${message}`;
   const handleCorrectDax = useCallback(async (messageContent, messageIndex) => {
     if (!selectedExample) return;
 
-    // FIX: Only save the current corrected DAX as the previous version.
+    // FIX: Only save the current corrected DAX as the previous version if it exists.
     const oldCorrectedDax = selectedExample.correctedDaxFormula || '';
 
     try {
@@ -125,13 +131,17 @@ User Message: ${message}`;
         selectedExample.targetDaxFormula
       );
 
+      // CAPTURE CONFIDENCE SCORE
+      const score = correctionResult.confidence_score || null; 
+
       if (correctionResult.success) {
-        // Update the corrected DAX formula, passing the old value as the previousDaxFormula
+        // Update the corrected DAX formula, passing the old value as the previousDaxFormula and the new score
         const result = await updateCorrectedDax(
           modelType, 
           selectedExampleId, 
           correctionResult.corrected_dax_formula,
-          oldCorrectedDax // Pass the current corrected DAX
+          oldCorrectedDax,
+          score // PASS THE NEW SCORE TO THE BACKEND
         );
         
         if (result.success) {
@@ -141,12 +151,13 @@ User Message: ${message}`;
               ? { 
                   ...ex, 
                   correctedDaxFormula: correctionResult.corrected_dax_formula,
-                  previousDaxFormula: oldCorrectedDax 
+                  previousDaxFormula: oldCorrectedDax,
+                  confidence_score: score // SAVE THE NEW SCORE TO LOCAL STATE
                 }
               : ex
           );
           setExamples(updatedExamples);
-          showToast(`DAX corrected! ${correctionResult.explanation}`);
+          showToast(`DAX corrected! Score: ${(score * 100).toFixed(0)}%`);
         } else {
           showToast(`Error saving corrected DAX: ${result.message}`, 'error');
         }
@@ -208,12 +219,16 @@ User Message: ${message}`;
   const handleSaveEditedDax = useCallback(async () => {
     if (!selectedExample) return;
     
+    // Maintain existing score
+    const existingConfidenceScore = selectedExample.confidence_score;
+
     // Call the existing update function, passing both values
     const updateResult = await updateCorrectedDax(
       modelType,
       selectedExample.id,
       editedDax,
-      selectedExample.correctedDaxFormula // The current (old) corrected DAX becomes the previous version
+      selectedExample.correctedDaxFormula, // The current (old) corrected DAX becomes the previous version
+      existingConfidenceScore
     );
 
     if (updateResult.success) {
@@ -223,7 +238,8 @@ User Message: ${message}`;
           ? { 
               ...ex, 
               correctedDaxFormula: editedDax, 
-              previousDaxFormula: selectedExample.correctedDaxFormula 
+              previousDaxFormula: selectedExample.correctedDaxFormula,
+              confidence_score: existingConfidenceScore
             }
           : ex
       );
@@ -276,7 +292,7 @@ User Message: ${message}`;
           <div className="pane-header">
             Conversational AI Chat
             {selectedExample && (
-              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1-rem' }}>
                 Example ID: {selectedExample.id}
               </span>
             )}
@@ -336,6 +352,7 @@ User Message: ${message}`;
       )}
     </>
   );
+  
 };
 
 export default CurationApp;

@@ -9,6 +9,7 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
         // FIX: Robustly check if a previous version exists by ensuring it's a non-empty, non-whitespace string.
         const hasPreviousVersion = !!(example.previousDaxFormula && String(example.previousDaxFormula).trim());
         
+        // The edit button should only be visible if a DAX exists AND it hasn't been edited before.
         const canEdit = hasCorrectedDax && !hasPreviousVersion;
 
         return (
@@ -59,6 +60,15 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                 )}
                 {hasPreviousVersion && (
                   <span className="edit-status">Edited</span>
+                )}
+                {/* ADDED: Confidence Score Display */}
+                {example.confidence_score !== null && example.confidence_score !== undefined && (
+                   <span 
+                      className="confidence-score-display" 
+                      style={{ marginLeft: '10px', fontWeight: 'normal', color: '#17a2b8', fontSize: '0.85rem' }}
+                   >
+                       Score: **{`${(example.confidence_score * 100).toFixed(0)}%`}**
+                   </span>
                 )}
               </span>
               <div className={`field-content ${
