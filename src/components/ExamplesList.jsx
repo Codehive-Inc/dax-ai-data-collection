@@ -43,21 +43,48 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                 {example.targetDaxFormula}
               </div>
             </div>
-
             <div className="example-field">
               <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && (
+
+            <div className="example-field">
+              <span className="field-label">
+                Corrected DAX Formula:
+                {canEdit && (
+                  <button
+                    className="edit-dax-btn"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents selecting the example
+                      onEditDax(example);
+                    }}
+                  >
+                    Edit
+                  </button>
+
+                )}
+                {hasPreviousVersion && (
+                  <span className="edit-status">Edited</span>
+                )}
+                {/* ADDED: Confidence Score Display */}
+                {example.confidence_score !== null && example.confidence_score !== undefined && (
+
                    <span 
                       className="confidence-score-display" 
                       style={{ marginLeft: '10px', fontWeight: 'normal', color: '#17a2b8', fontSize: '0.85rem' }}
                    >
                        Score: **{`${(example.confidence_score * 100).toFixed(0)}%`}**
                    </span>
+
                 )}</span>
+
+                )}
+              </span>
+
               <div className={`field-content ${
                 example.correctedDaxFormula 
                   ? 'corrected' 
                   : 'empty'
               }`}>
+
                 {example.previousDaxFormula || example.correctedDaxFormula}
               </div>
             </div>
@@ -89,6 +116,16 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                   : 'empty'
               }`}>
                 { example.correctedDaxFormula || 'Not yet corrected' }
+
+                {example.correctedDaxFormula || 'Not yet corrected'}
+              </div>
+            </div>
+
+            <div className="example-field">
+              <span className="field-label">AI DAX Formula:</span>
+              <div className="field-content">
+                {example.previousDaxFormula || example.correctedDaxFormula}
+
               </div>
             </div>
 
