@@ -47,26 +47,12 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
               </span>
               <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>
                 {example.correctedDaxFormula || 'Not yet corrected'}
-                {example.confidence_score !== null &&
-                  example.confidence_score !== undefined && (
-                    <span
-                      className="confidence-score-display"
-                      style={{
-                        marginLeft: '10px',
-                        fontWeight: 'normal',
-                        color: '#17a2b8',
-                        fontSize: '0.85rem',
-                      }}
-                    >
-                      Score: {(example.confidence_score * 100).toFixed(0)}%
-                    </span>
-                  )}
               </div>
             </div>
 
             <div className="example-field">
-              <span className="field-label">AI DAX Formula:</span>
-              <div className="field-content">{example.previousDaxFormula || example.correctedDaxFormula}</div>
+              <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && <span className="confidence-score-display">Score: {(example.confidence_score * 100).toFixed(0)}%</span>}</span>
+              <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>{example.previousDaxFormula || example.correctedDaxFormula}</div>
             </div>
 
             
