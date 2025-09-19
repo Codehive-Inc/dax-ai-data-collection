@@ -29,6 +29,13 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
               <div className="field-content">{example.targetDaxFormula}</div>
             </div>
 
+            
+
+            <div className="example-field">
+              <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && <span className="confidence-score-display">Score: {(example.confidence_score * 100).toFixed(0)}%</span>}</span>
+              <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>{example.previousDaxFormula || example.correctedDaxFormula}</div>
+            </div>
+
             <div className="example-field">
               <span className="field-label">
                 User Corrected DAX Formula:
@@ -48,11 +55,6 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
               <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>
                 {example.correctedDaxFormula || 'Not yet corrected'}
               </div>
-            </div>
-
-            <div className="example-field">
-              <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && <span className="confidence-score-display">Score: {(example.confidence_score * 100).toFixed(0)}%</span>}</span>
-              <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>{example.previousDaxFormula || example.correctedDaxFormula}</div>
             </div>
 
             
