@@ -57,6 +57,7 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                   >
                     Edit
                   </button>
+
                 )}
                 {hasPreviousVersion && (
                   <span className="edit-status">Edited</span>
@@ -77,6 +78,13 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                   : 'empty'
               }`}>
                 {example.correctedDaxFormula || 'Not yet corrected'}
+              </div>
+            </div>
+
+            <div className="example-field">
+              <span className="field-label">AI DAX Formula:</span>
+              <div className="field-content">
+                {example.previousDaxFormula || example.correctedDaxFormula}
               </div>
             </div>
           </div>
