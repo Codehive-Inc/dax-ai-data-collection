@@ -157,7 +157,7 @@ User Message: ${message}`;
               : ex
           );
           setExamples(updatedExamples);
-          showToast(`DAX corrected! Score: ${(score * 100).toFixed(0)}%`);
+          showToast(`DAX corrected! , Explaination :  ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
         } else {
           showToast(`Error saving corrected DAX: ${result.message}`, 'error');
         }
