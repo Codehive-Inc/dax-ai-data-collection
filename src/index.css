@@ -471,3 +471,33 @@ code {
 .example-item.dummy-data .field-content {
   opacity: 0.8;
 }
+
+/* Add these styles to the bottom of your src/index.css file */
+
+.edit-dax-btn {
+  /* Styling for the Edit button */
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.edit-dax-btn:hover {
+  background-color: #2980b9;
+}
+
+.edit-status {
+  /* Styling for the 'Edited' text */
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: #6c757d; /* Gray text color */
+  font-style: italic;
+  font-weight: 400;
+}

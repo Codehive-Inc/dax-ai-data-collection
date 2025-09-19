@@ -13,6 +13,8 @@ const CurationApp = ({ modelType }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // New state for editing mode
+  const [editedDax, setEditedDax] = useState(''); // New state for edited DAX
 
   const modelTypeLabels = {
     cognos: 'Cognos to Power BI',
@@ -76,15 +78,30 @@ User Message: ${message}`;
   const handleUseDaxFormula = useCallback(async (daxFormula) => {
     if (!selectedExample) return;
 
+    // FIX: Only save the current corrected DAX as the previous version if it exists.
+    const oldCorrectedDax = selectedExample.correctedDaxFormula || ''; 
+    const existingConfidenceScore = selectedExample.confidence_score || null;
+
     try {
-      // Update via API
-      const result = await updateCorrectedDax(modelType, selectedExampleId, daxFormula);
+      // Update via API, passing the old value as the previousDaxFormula and retaining the score
+      const result = await updateCorrectedDax(
+        modelType, 
+        selectedExampleId, 
+        daxFormula, 
+        oldCorrectedDax,
+        existingConfidenceScore
+      );
       
       if (result.success) {
-        // Update local state
+        // Update local state, setting the old DAX as the previous version
         const updatedExamples = examples.map(ex => 
           ex.id === selectedExampleId 
-            ? { ...ex, correctedDaxFormula: daxFormula }
+            ? { 
+                ...ex, 
+                correctedDaxFormula: daxFormula, 
+                previousDaxFormula: oldCorrectedDax,
+                confidence_score: existingConfidenceScore
+              }
             : ex
         );
         setExamples(updatedExamples);
@@ -100,6 +117,9 @@ User Message: ${message}`;
   const handleCorrectDax = useCallback(async (messageContent, messageIndex) => {
     if (!selectedExample) return;
 
+    // FIX: Only save the current corrected DAX as the previous version if it exists.
+    const oldCorrectedDax = selectedExample.correctedDaxFormula || '';
+
     try {
       setIsLoading(true);
       showToast('Getting structured DAX correction...', 'info');
@@ -111,23 +131,33 @@ User Message: ${message}`;
         selectedExample.targetDaxFormula
       );
 
+      // CAPTURE CONFIDENCE SCORE
+      const score = correctionResult.confidence_score || null; 
+
       if (correctionResult.success) {
-        // Update the corrected DAX formula
+        // Update the corrected DAX formula, passing the old value as the previousDaxFormula and the new score
         const result = await updateCorrectedDax(
           modelType, 
           selectedExampleId, 
-          correctionResult.corrected_dax_formula
+          correctionResult.corrected_dax_formula,
+          oldCorrectedDax,
+          score // PASS THE NEW SCORE TO THE BACKEND
         );
         
         if (result.success) {
           // Update local state
           const updatedExamples = examples.map(ex => 
             ex.id === selectedExampleId 
-              ? { ...ex, correctedDaxFormula: correctionResult.corrected_dax_formula }
+              ? { 
+                  ...ex, 
+                  correctedDaxFormula: correctionResult.corrected_dax_formula,
+                  previousDaxFormula: oldCorrectedDax,
+                  confidence_score: score // SAVE THE NEW SCORE TO LOCAL STATE
+                }
               : ex
           );
           setExamples(updatedExamples);
-          showToast(`DAX corrected! ${correctionResult.explanation}`);
+          showToast(`DAX corrected! , Explaination :  ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
         } else {
           showToast(`Error saving corrected DAX: ${result.message}`, 'error');
         }
@@ -179,6 +209,53 @@ User Message: ${message}`;
     }
   }, [modelType, showToast, loadData]);
 
+  // Handle Edit button click
+  const handleEditDax = useCallback((example) => {
+    setEditedDax(example.correctedDaxFormula);
+    setIsEditing(true);
+  }, []);
+
+  // Handle Save button in the modal
+  const handleSaveEditedDax = useCallback(async () => {
+    if (!selectedExample) return;
+    
+    // Maintain existing score
+    const existingConfidenceScore = selectedExample.confidence_score;
+
+    // Call the existing update function, passing both values
+    const updateResult = await updateCorrectedDax(
+      modelType,
+      selectedExample.id,
+      editedDax,
+      selectedExample.correctedDaxFormula, // The current (old) corrected DAX becomes the previous version
+      existingConfidenceScore
+    );
+
+    if (updateResult.success) {
+      // Update local state and close the edit modal
+      const updatedExamples = examples.map(ex =>
+        ex.id === selectedExample.id
+          ? { 
+              ...ex, 
+              correctedDaxFormula: editedDax, 
+              previousDaxFormula: selectedExample.correctedDaxFormula,
+              confidence_score: existingConfidenceScore
+            }
+          : ex
+      );
+      setExamples(updatedExamples);
+      setIsEditing(false);
+      showToast('DAX formula successfully updated!');
+    } else {
+      showToast(`Error updating DAX formula: ${updateResult.message}`, 'error');
+    }
+  }, [selectedExample, editedDax, examples, modelType, showToast]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditedDax('');
+  }, []);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -207,6 +284,7 @@ User Message: ${message}`;
             examples={examples}
             selectedExampleId={selectedExampleId}
             onExampleSelect={handleExampleSelect}
+            onEditDax={handleEditDax}
           />
         </div>
 
@@ -214,7 +292,7 @@ User Message: ${message}`;
           <div className="pane-header">
             Conversational AI Chat
             {selectedExample && (
-              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1-rem' }}>
                 Example ID: {selectedExample.id}
               </span>
             )}
@@ -238,8 +316,43 @@ User Message: ${message}`;
         onAdd={handleAddExample}
         modelType={modelType}
       />
+
+      {isEditing && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Edit Corrected DAX Formula</h2>
+              <button className="modal-close-btn" onClick={handleCancelEdit}>
+                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>×</span>
+              </button>
+            </div>
+            <div className="modal-form">
+              <div className="form-group">
+                <label className="form-label">
+                  Corrected DAX Formula *
+                </label>
+                <textarea
+                  className="form-textarea"
+                  value={editedDax}
+                  onChange={(e) => setEditedDax(e.target.value)}
+                  rows={6}
+                />
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn btn-secondary" onClick={handleCancelEdit}>
+                  Cancel
+                </button>
+                <button type="button" className="btn btn-primary" onClick={handleSaveEditedDax}>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
+  
 };
 
 export default CurationApp;
