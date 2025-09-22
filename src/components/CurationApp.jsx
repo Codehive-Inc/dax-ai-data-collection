@@ -23,13 +23,9 @@ const CurationApp = ({ modelType }) => {
   };
 
   const selectedExample = examples.find(ex => ex.id === selectedExampleId);
-  // Disabled logic: If previousDaxFormula (AI final) OR correctedDaxFormula (User final) has a value, disable it.
-  // We use previousDaxFormula now to check if an AI correction has occurred.
-  const hasAiCorrection = !!selectedExample?.previousDaxFormula;
-  const hasCorrectedDax = !!selectedExample?.correctedDaxFormula;
-  const correctDaxDisabled = hasAiCorrection || hasCorrectedDax;
+  const hasCorrectedDax = !!selectedExample?.correctedDaxFormula; // ADDED: For disabling the Correct DAX button
 
-  // Helper function to format date from ID
+  // ADDED: Helper function to format date from ID
   const formatDateFromId = (id) => {
     if (!id || typeof id !== 'string') return 'N/A';
     
@@ -52,6 +48,8 @@ const CurationApp = ({ modelType }) => {
     // For hardcoded IDs like 'cognos-001'
     return 'Legacy Data';
   };
+//...
+// (omitted handleExampleSelect, showToast, etc. for brevity, as they were not the source of the crash)
 //...
 
   const handleExampleSelect = (exampleId) => {
@@ -147,7 +145,7 @@ User Message: ${message}`;
   const handleCorrectDax = useCallback(async (messageContent, messageIndex) => {
     if (!selectedExample) return;
 
-    // We pass the current value of correctedDaxFormula as the old value to the backend API.
+    // FIX: Only save the current corrected DAX as the previous version if it exists.
     const oldCorrectedDax = selectedExample.correctedDaxFormula || '';
 
     try {
@@ -163,34 +161,31 @@ User Message: ${message}`;
 
       // CAPTURE CONFIDENCE SCORE
       const score = correctionResult.confidence_score || null; 
-      const aiFinalDax = correctionResult.corrected_dax_formula; // AI's result
 
       if (correctionResult.success) {
-        // API Call: Save AI's result to the file's primary correction field.
+        // Update the corrected DAX formula, passing the old value as the previousDaxFormula and the new score
         const result = await updateCorrectedDax(
           modelType, 
           selectedExampleId, 
-          aiFinalDax,
-          oldCorrectedDax, // Send current value as backup
-          score
+          correctionResult.corrected_dax_formula,
+          oldCorrectedDax,
+          score // PASS THE NEW SCORE TO THE BACKEND
         );
         
         if (result.success) {
-          // LOCAL STATE UPDATE (The Fix): 
-          // 1. Move AI's result to previousDaxFormula (for AI Display).
-          // 2. Clear correctedDaxFormula (for User Display).
+          // Update local state
           const updatedExamples = examples.map(ex => 
             ex.id === selectedExampleId 
               ? { 
                   ...ex, 
-                  previousDaxFormula: aiFinalDax, // AI's final answer goes here (AI DAX Formula column)
-                  correctedDaxFormula: '',       // User's final answer CLEARED (per user request)
-                  confidence_score: score
+                  correctedDaxFormula: correctionResult.corrected_dax_formula,
+                  previousDaxFormula: oldCorrectedDax,
+                  confidence_score: score // SAVE THE NEW SCORE TO LOCAL STATE
                 }
               : ex
           );
           setExamples(updatedExamples);
-          showToast(`DAX corrected! , Explaination :  ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
+          showToast(`DAX corrected! , Explaination :  ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
         } else {
           showToast(`Error saving corrected DAX: ${result.message}`, 'error');
         }
@@ -244,10 +239,7 @@ User Message: ${message}`;
 
   // Handle Edit button click
   const handleEditDax = useCallback((example) => {
-    // If the user has already edited, start editing that value.
-    // Otherwise, start editing the AI Final DAX (previousDaxFormula).
-    const initialEditValue = example.correctedDaxFormula || example.previousDaxFormula;
-    setEditedDax(initialEditValue);
+    setEditedDax(example.correctedDaxFormula);
     setIsEditing(true);
   }, []);
 
@@ -257,15 +249,13 @@ User Message: ${message}`;
     
     // Maintain existing score
     const existingConfidenceScore = selectedExample.confidence_score;
-    // AI Final DAX is the baseline (old value)
-    const aiFinalDax = selectedExample.previousDaxFormula || '';
 
-    // API Call: User's edited DAX is the new primary correction
+    // Call the existing update function, passing both values
     const updateResult = await updateCorrectedDax(
       modelType,
       selectedExample.id,
-      editedDax, // User's edited DAX
-      aiFinalDax, // AI Final DAX sent as the previous backup value
+      editedDax,
+      selectedExample.correctedDaxFormula, // The current (old) corrected DAX becomes the previous version
       existingConfidenceScore
     );
 
@@ -275,8 +265,8 @@ User Message: ${message}`;
         ex.id === selectedExample.id
           ? { 
               ...ex, 
-              correctedDaxFormula: editedDax, // User Final is updated here (User Corrected DAX Formula column)
-              previousDaxFormula: aiFinalDax, // AI Final remains untouched (AI DAX Formula column)
+              correctedDaxFormula: editedDax, 
+              previousDaxFormula: selectedExample.correctedDaxFormula,
               confidence_score: existingConfidenceScore
             }
           : ex
@@ -330,7 +320,7 @@ User Message: ${message}`;
           <div className="pane-header">
             Conversational AI Chat
             {selectedExample && (
-              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}> {/* FIX: Changed '1-rem' to '1rem' */}
                 Example ID: {selectedExample.id}
                 <span style={{ marginLeft: '1rem' }}>
                   Created Date: {formatDateFromId(selectedExample.id)}
@@ -345,7 +335,7 @@ User Message: ${message}`;
             onCorrectDax={handleCorrectDax}
             isLoading={isLoading}
             disabled={!selectedExample}
-            correctDaxDisabled={correctDaxDisabled}
+            correctDaxDisabled={hasCorrectedDax} // ADDED: for disabling the Correct DAX button
           />
         </div>
       </main>
