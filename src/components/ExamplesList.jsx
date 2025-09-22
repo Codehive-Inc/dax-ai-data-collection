@@ -4,18 +4,9 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
   return (
     <div className="examples-list">
       {examples.map((example) => {
-        // --- NEW DISPLAY LOGIC ---
-        // AI DAX Formula is strictly sourced from previousDaxFormula
-        const aiDaxFinal = example.previousDaxFormula; 
-        // User Corrected DAX Formula is strictly sourced from correctedDaxFormula
-        const userDaxFinal = example.correctedDaxFormula; 
-        
-        const hasUserEdit = !!userDaxFinal;
-        const hasAiCorrection = !!aiDaxFinal;
-        
-        // Edit button is shown only if AI correction exists AND user has not manually corrected it yet.
-        const canEdit = hasAiCorrection && !hasUserEdit;
-        // --- END NEW DISPLAY LOGIC ---
+        const hasCorrectedDax = !!example.correctedDaxFormula;
+        const hasPreviousVersion = !!(example.previousDaxFormula && String(example.previousDaxFormula).trim());
+        const canEdit = hasCorrectedDax && !hasPreviousVersion;
 
         return (
           <div
@@ -39,13 +30,12 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
             </div>
 
             
-            {/* AI DAX Formula Column: Shows only previousDaxFormula */}
+
             <div className="example-field">
               <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && <span className="confidence-score-display">Score: {(example.confidence_score * 100).toFixed(0)}%</span>}</span>
-              <div className={`field-content ${hasAiCorrection ? 'corrected' : 'empty'}`}>{aiDaxFinal || 'Not yet corrected by AI'}</div>
+              <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>{example.previousDaxFormula || example.correctedDaxFormula}</div>
             </div>
 
-            {/* User Corrected DAX Formula Column: Shows only correctedDaxFormula */}
             <div className="example-field">
               <span className="field-label">
                 User Corrected DAX Formula:
@@ -60,10 +50,10 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                     Edit
                   </button>
                 )}
-                {hasUserEdit && <span className="edit-status">Edited</span>}
+                {hasPreviousVersion && <span className="edit-status">Edited</span>}
               </span>
-              <div className={`field-content ${hasUserEdit ? 'corrected' : 'empty'}`}>
-                {userDaxFinal || 'Not yet corrected by User'}
+              <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>
+                {example.correctedDaxFormula || 'Not yet corrected'}
               </div>
             </div>
 
