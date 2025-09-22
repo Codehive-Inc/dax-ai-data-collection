@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 const CopyIcon = () => <span style={{ fontSize: '14px' }}>📋</span>;
 const CheckIcon = () => <span style={{ fontSize: '14px' }}>✓</span>;
 
-const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax, isLoading, disabled }) => {
+const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax, isLoading, disabled  , correctDaxDisabled }) => {
   const [inputValue, setInputValue] = useState('');
   const [copiedStates, setCopiedStates] = useState({});
   const messagesEndRef = useRef(null);
@@ -122,13 +122,17 @@ const ChatInterface = ({ messages, onSendMessage, onUseDaxFormula, onCorrectDax,
                 <button
                   className="btn btn-secondary"
                   onClick={() => onCorrectDax(message.content, index)}
+                  disabled={correctDaxDisabled}
                   style={{ 
                     marginLeft: 'auto', 
                     padding: '0.25rem 0.5rem', 
                     fontSize: '0.75rem',
-                    backgroundColor: '#28a745',
+                    // MODIFIED LINE: Use conditional style based on disabled state
+                    backgroundColor: correctDaxDisabled ? '#a0a0a0' : '#28a745', 
                     color: 'white',
-                    border: 'none'
+                    border: 'none',
+                    // ADDED LINE: Change cursor to reflect disabled state
+                    cursor: correctDaxDisabled ? 'not-allowed' : 'pointer'
                   }}
                 >
                   🔧 Correct the DAX

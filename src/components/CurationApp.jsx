@@ -23,6 +23,34 @@ const CurationApp = ({ modelType }) => {
   };
 
   const selectedExample = examples.find(ex => ex.id === selectedExampleId);
+  const hasCorrectedDax = !!selectedExample?.correctedDaxFormula; // ADDED: For disabling the Correct DAX button
+
+  // ADDED: Helper function to format date from ID
+  const formatDateFromId = (id) => {
+    if (!id || typeof id !== 'string') return 'N/A';
+    
+    // Check for the pattern 'modelType-timestamp'
+    const parts = id.split('-');
+    const potentialTimestamp = parts[parts.length - 1];
+    
+    // Check if the last part is a 13-digit number (milliseconds timestamp)
+    if (potentialTimestamp && /^\d{13}$/.test(potentialTimestamp)) {
+      const date = new Date(parseInt(potentialTimestamp, 10));
+      return date.toLocaleString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
+    
+    // For hardcoded IDs like 'cognos-001'
+    return 'Legacy Data';
+  };
+//...
+// (omitted handleExampleSelect, showToast, etc. for brevity, as they were not the source of the crash)
+//...
 
   const handleExampleSelect = (exampleId) => {
     setSelectedExampleId(exampleId);
@@ -292,8 +320,11 @@ User Message: ${message}`;
           <div className="pane-header">
             Conversational AI Chat
             {selectedExample && (
-              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1-rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}> {/* FIX: Changed '1-rem' to '1rem' */}
                 Example ID: {selectedExample.id}
+                <span style={{ marginLeft: '1rem' }}>
+                  Created Date: {formatDateFromId(selectedExample.id)}
+                </span>
               </span>
             )}
           </div>
@@ -304,6 +335,7 @@ User Message: ${message}`;
             onCorrectDax={handleCorrectDax}
             isLoading={isLoading}
             disabled={!selectedExample}
+            correctDaxDisabled={hasCorrectedDax} // ADDED: for disabling the Correct DAX button
           />
         </div>
       </main>
