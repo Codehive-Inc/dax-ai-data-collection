@@ -15,6 +15,7 @@ const CurationApp = ({ modelType }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false); // New state for editing mode
   const [editedDax, setEditedDax] = useState(''); // New state for edited DAX
+  const [searchQuery, setSearchQuery] = useState(''); // ADDED: New state for search query
 
   const modelTypeLabels = {
     cognos: 'Cognos to Power BI',
@@ -23,7 +24,14 @@ const CurationApp = ({ modelType }) => {
   };
 
   const selectedExample = examples.find(ex => ex.id === selectedExampleId);
-  const hasCorrectedDax = !!selectedExample?.correctedDaxFormula; // ADDED: For disabling the Correct DAX button
+  const hasCorrectedDax = !!selectedExample?.correctedDaxFormula;
+
+  // ADDED: Filter examples based on search query
+  const filteredExamples = examples.filter(example =>
+    example.sourceExpression.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    example.targetDaxFormula.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (example.correctedDaxFormula && example.correctedDaxFormula.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   // ADDED: Helper function to format date from ID
   const formatDateFromId = (id) => {
@@ -48,9 +56,6 @@ const CurationApp = ({ modelType }) => {
     // For hardcoded IDs like 'cognos-001'
     return 'Legacy Data';
   };
-//...
-// (omitted handleExampleSelect, showToast, etc. for brevity, as they were not the source of the crash)
-//...
 
   const handleExampleSelect = (exampleId) => {
     setSelectedExampleId(exampleId);
@@ -185,7 +190,7 @@ User Message: ${message}`;
               : ex
           );
           setExamples(updatedExamples);
-          showToast(`DAX corrected! , Explaination :  ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
+          showToast(`DAX corrected! , Explaination : ${correctionResult.explanation} Score: ${(score * 100).toFixed(0)}% `);
         } else {
           showToast(`Error saving corrected DAX: ${result.message}`, 'error');
         }
@@ -301,6 +306,13 @@ User Message: ${message}`;
             Migration Examples ({examples.length})
           </div>
           <div style={{ padding: '1rem' }}>
+            <input 
+              type="text" 
+              className="search-input"
+              placeholder="Search examples..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <button 
               className="btn btn-primary add-example-btn"
               onClick={() => setShowAddModal(true)}
@@ -309,7 +321,7 @@ User Message: ${message}`;
             </button>
           </div>
           <ExamplesList
-            examples={examples}
+            examples={filteredExamples} // MODIFIED: Pass filtered examples
             selectedExampleId={selectedExampleId}
             onExampleSelect={handleExampleSelect}
             onEditDax={handleEditDax}
@@ -320,7 +332,7 @@ User Message: ${message}`;
           <div className="pane-header">
             Conversational AI Chat
             {selectedExample && (
-              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}> {/* FIX: Changed '1-rem' to '1rem' */}
+              <span style={{ fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '1rem' }}>
                 Example ID: {selectedExample.id}
                 <span style={{ marginLeft: '1rem' }}>
                   Created Date: {formatDateFromId(selectedExample.id)}
@@ -335,7 +347,7 @@ User Message: ${message}`;
             onCorrectDax={handleCorrectDax}
             isLoading={isLoading}
             disabled={!selectedExample}
-            correctDaxDisabled={hasCorrectedDax} // ADDED: for disabling the Correct DAX button
+            correctDaxDisabled={hasCorrectedDax}
           />
         </div>
       </main>
@@ -384,7 +396,6 @@ User Message: ${message}`;
       )}
     </>
   );
-  
 };
 
 export default CurationApp;
