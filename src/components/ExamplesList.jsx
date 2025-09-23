@@ -29,8 +29,6 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
               <div className="field-content">{example.targetDaxFormula}</div>
             </div>
 
-            
-
             <div className="example-field">
               <span className="field-label">AI DAX Formula: {example.confidence_score !== null && example.confidence_score !== undefined && <span className="confidence-score-display">Score: {(example.confidence_score * 100).toFixed(0)}%</span>}</span>
               <div className={`field-content ${hasCorrectedDax ? 'corrected' : 'empty'}`}>{example.previousDaxFormula || example.correctedDaxFormula}</div>
@@ -56,8 +54,6 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
                 {example.correctedDaxFormula || 'Not yet corrected'}
               </div>
             </div>
-
-            
           </div>
         );
       })}
@@ -71,7 +67,7 @@ const ExamplesList = ({ examples, selectedExampleId, onExampleSelect, onEditDax 
             fontStyle: 'italic',
           }}
         >
-          No examples loaded. Please check your data file.
+          No examples match your search criteria. Please try a different query.
         </div>
       )}
     </div>
