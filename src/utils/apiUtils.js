@@ -1,3 +1,5 @@
+// src/utils/apiUtils.js
+
 import axios from 'axios';
 
 // Environment configuration
@@ -65,12 +67,19 @@ const MODEL_ENDPOINTS = {
   tableau: process.env.REACT_APP_TABLEAU_API_URL || '/api/tableau'
 };
 
-export const sendChatMessage = async (modelType, messages) => {
+export const sendChatMessage = async (modelType, messages, exampleDetails = null) => {
   try {
-    const response = await api.post('/api/v1/chat', {
+    const requestBody = {
       model_type: modelType,
       messages: messages
-    });
+    };
+    
+    // ADDED: Conditionally add example details to the request body
+    if (exampleDetails) {
+      requestBody.example_details = exampleDetails;
+    }
+    
+    const response = await api.post('/api/v1/chat', requestBody);
     
     return response.data;
   } catch (error) {
@@ -198,13 +207,18 @@ export const sendChatMessageDirect = async (modelType, messages) => {
 };
 
 // Wrapper function that goes directly to model APIs (no gateway)
-export const sendChatMessageWithFallback = async (modelType, messages) => {
+export const sendChatMessageWithFallback = async (modelType, messages, showToast) => { // MODIFIED: Added showToast parameter
   try {
-    // Go directly to model-specific API
-    return await sendChatMessageDirect(modelType, messages);
+    const response = await sendChatMessageDirect(modelType, messages);
+    // Log for normal operation
+    console.log("✅ Chat response from live API.");
+    return response;
   } catch (directError) {
+    // MODIFIED: Show a warning toast on fallback
+    if (showToast) {
+      showToast('⚠️ API connection failed. Using mock responses for chat.', 'warning');
+    }
     console.warn('Direct API failed, using mock response:', directError.message);
-    // Fall back to mock
     return await mockChatResponse(modelType, messages);
   }
 };
