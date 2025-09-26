@@ -92,8 +92,8 @@ const CurationApp = ({ modelType }) => {
     setIsLoading(true);
 
     try {
-      // MODIFIED: Pass selectedExample as the third argument to sendChatMessageWithFallback.
-      const response = await sendChatMessageWithFallback(modelType, newMessages, selectedExample);
+      // MODIFIED: Pass selectedExample as exampleDetails and showToast for contextual and fallback handling.
+      const response = await sendChatMessageWithFallback(modelType, newMessages, selectedExample, showToast);
       setChatMessages([...newMessages, response.reply]);
     } catch (error) {
       showToast('Error sending message: ' + error.message, 'error');

@@ -151,17 +151,24 @@ This uses SUMX for row-by-row calculation which can be more accurate for this ty
 };
 
 // Alternative: Send directly to individual model APIs
-export const sendChatMessageDirect = async (modelType, messages) => {
+export const sendChatMessageDirect = async (modelType, messages, exampleDetails = null) => { // MODIFIED: Added exampleDetails
   try {
     const modelUrl = MODEL_ENDPOINTS[modelType];
     if (!modelUrl) {
       throw new Error(`No endpoint configured for model type: ${modelType}`);
     }
-
-    const response = await axios.post(`${modelUrl}/api/chat`, {
+    
+    const requestBody = { // ADDED: Build request body here
       model_type: modelType,
       messages: messages
-    }, {
+    };
+    
+    // ADDED: Conditionally add example details to the request body
+    if (exampleDetails) {
+      requestBody.example_details = exampleDetails;
+    }
+
+    const response = await axios.post(`${modelUrl}/api/chat`, requestBody, { // MODIFIED: Used requestBody
       timeout: CONFIG.API_TIMEOUT,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -207,9 +214,9 @@ export const sendChatMessageDirect = async (modelType, messages) => {
 };
 
 // Wrapper function that goes directly to model APIs (no gateway)
-export const sendChatMessageWithFallback = async (modelType, messages, showToast) => { // MODIFIED: Added showToast parameter
+export const sendChatMessageWithFallback = async (modelType, messages, exampleDetails, showToast) => { // MODIFIED: Added exampleDetails
   try {
-    const response = await sendChatMessageDirect(modelType, messages);
+    const response = await sendChatMessageDirect(modelType, messages, exampleDetails); // MODIFIED: Passed exampleDetails
     // Log for normal operation
     console.log("✅ Chat response from live API.");
     return response;
