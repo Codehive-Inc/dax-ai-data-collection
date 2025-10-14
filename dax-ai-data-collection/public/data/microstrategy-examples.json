@@ -1,0 +1,62 @@
+[
+  {
+    "id": "mstr-001",
+    "sourceExpression": "Sum(Patient_Recovery_Days){~+, Visit_Type_ID = 3, Treatment_Success_Flag = 1}",
+    "targetDaxFormula": "CALCULATE( SUM(MedicalVisits[Patient_Recovery_Days]), MedicalVisits[Visit_Type_ID] = 3, MedicalVisits[Treatment_Success_Flag] = 1 )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-002",
+    "sourceExpression": "ApplyAgg(\"SUM(CASE WHEN #0 >= 18 AND #0 <= 65 AND #1 = 'Active' THEN #2 ELSE 0 END)\", [Customer Age], [Employment Status], [Annual Spending])",
+    "targetDaxFormula": "SUMX( FILTER( Customers, Customers[Customer Age] >= 18 && Customers[Customer Age] <= 65 && Customers[Employment Status] = \"Active\" ), Customers[Annual Spending] )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-003",
+    "sourceExpression": "Case(Contains(Upper([Customer Feedback]), \"DEFECT\") OR Contains(Upper([Customer Feedback]), \"BROKEN\") OR Contains(Upper([Customer Feedback]), \"MALFUNCTION\"), \"Quality Issue\", Contains(Upper([Customer Feedback]), \"DELAY\") OR Contains(Upper([Customer Feedback]), \"LATE\") OR Contains(Upper([Customer Feedback]), \"SLOW\"), \"Delivery Issue\", Contains(Upper([Customer Feedback]), \"RUDE\") OR Contains(Upper([Customer Feedback]), \"UNPROFESSIONAL\") OR Contains(Upper([Customer Feedback]), \"ATTITUDE\"), \"Service Issue\", \"Other\")",
+    "targetDaxFormula": "SWITCH( TRUE(), OR( OR( SEARCH(\"DEFECT\", UPPER([Customer Feedback]), 1, 0) > 0, SEARCH(\"BROKEN\", UPPER([Customer Feedback]), 1, 0) > 0 ), SEARCH(\"MALFUNCTION\", UPPER([Customer Feedback]), 1, 0) > 0 ), \"Quality Issue\", OR( OR( SEARCH(\"DELAY\", UPPER([Customer Feedback]), 1, 0) > 0, SEARCH(\"LATE\", UPPER([Customer Feedback]), 1, 0) > 0 ), SEARCH(\"SLOW\", UPPER([Customer Feedback]), 1, 0) > 0 ), \"Delivery Issue\", OR( OR( SEARCH(\"RUDE\", UPPER([Customer Feedback]), 1, 0) > 0, SEARCH(\"UNPROFESSIONAL\", UPPER([Customer Feedback]), 1, 0) > 0 ), SEARCH(\"ATTITUDE\", UPPER([Customer Feedback]), 1, 0) > 0 ), \"Service Issue\", \"Other\" )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-004",
+    "sourceExpression": "FirstValue(Revenue, {Product_Category, Quarter})[Offset=-2] + LastValue(Revenue, {Product_Category, Quarter})[Offset=2]",
+    "targetDaxFormula": "VAR CurrentQuarter = SELECTEDVALUE('Calendar'[Quarter]) VAR CurrentCategory = SELECTEDVALUE('Products'[Product_Category]) VAR FirstRevenue = CALCULATE( SUM('Sales'[Revenue]), FILTER( ALL('Calendar'[Quarter]), 'Calendar'[Quarter] = CurrentQuarter - 2 ), 'Products'[Product_Category] = CurrentCategory ) VAR LastRevenue = CALCULATE( SUM('Sales'[Revenue]), FILTER( ALL('Calendar'[Quarter]), 'Calendar'[Quarter] = CurrentQuarter + 2 ), 'Products'[Product_Category] = CurrentCategory ) RETURN FirstRevenue + LastRevenue",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-005",
+    "sourceExpression": "Trim(Upper(Replace(Replace([Product_Name], \"  \", \" \"), \"-\", \"_\"))) + \" | \" + Left([Category_Code], 3) + Right(\"000\" + [Item_ID], 4)",
+    "targetDaxFormula": "TRIM(UPPER(SUBSTITUTE(SUBSTITUTE([Product_Name], \"  \", \" \"), \"-\", \"_\"))) & \" | \" & LEFT([Category_Code], 3) & RIGHT(\"000\" & [Item_ID], 4)",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-006",
+    "sourceExpression": "Median(Revenue){~, Year, Region}",
+    "targetDaxFormula": "MEDIANX( KEEPFILTERS(VALUES('Sales'[Region])), CALCULATE( MEDIAN('Sales'[Revenue]), ALLEXCEPT('DateTable', 'DateTable'[Year]) ) )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-007",
+    "sourceExpression": "Concat(\"Order Date: \", CStr(DayOfMonth(Order Date)), \"/\", CStr(MonthOfYear(Order Date)), \"/\", CStr(YearOfDate(Order Date)), \" - Order Amount: \", CStr(CDbl(Sum([Order Amount]))))",
+    "targetDaxFormula": "VAR OrderDateFormatted = FORMAT(SELECTEDVALUE('Orders'[Order Date]), \"dd/MM/yyyy\") RETURN \"Order Date: \" & OrderDateFormatted & \" - Order Amount: \" & FORMAT(SUM('Orders'[Order Amount]), \"General Number\")",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-008",
+    "sourceExpression": "If(Contains([Product Name], \"Laptop\") And Not(Contains([Product Name], \"Gaming\")), \"Standard Laptop\", If(Contains([Product Name], \"Gaming Laptop\"], \"Gaming Laptop\", \"Other Product\"))",
+    "targetDaxFormula": "IF( SEARCH(\"Laptop\", 'Product'[Product Name], 1, BLANK()) > 0 && SEARCH(\"Gaming\", 'Product'[Product Name], 1, BLANK()) = BLANK(), \"Standard Laptop\", IF( SEARCH(\"Gaming Laptop\", 'Product'[Product Name], 1, BLANK()) > 0, \"Gaming Laptop\", \"Other Product\" ) )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-009",
+    "sourceExpression": "Sum(ApplySimple(\"CASE WHEN #0 IN (SELECT ItemID FROM DiscountedItems WHERE DiscountStartDate <= GETDATE() AND DiscountEndDate >= GETDATE()) THEN #1 ELSE 0 END\", [ItemID], [Revenue])){~}",
+    "targetDaxFormula": "VAR Today = TODAY() RETURN SUMX( FILTER( Sales, NOT(ISBLANK(Sales[ItemID])) && CALCULATE(COUNTROWS(DiscountedItems), FILTER(DiscountedItems, DiscountedItems[ItemID] = Sales[ItemID] && DiscountedItems[DiscountStartDate] <= Today && DiscountedItems[DiscountEndDate] >= Today ))) > 0 ), Sales[Revenue] )",
+    "correctedDaxFormula": ""
+  },
+  {
+    "id": "mstr-010",
+    "sourceExpression": "Sum(Revenue){~+, Year, Region}",
+    "targetDaxFormula": "CALCULATE( SUM(Sales[Revenue]), ALLEXCEPT( Sales, 'Date'[Year], Region[RegionName] ) )",
+    "correctedDaxFormula": ""
+  }
+]

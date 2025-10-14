@@ -1,0 +1,62 @@
+name: daxaicollection
+
+services:
+  # React Frontend - Data Collection
+  dax-ai-data-collection:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dax-ai-data-collection
+    ports:
+      - "3000:3000"  # React app port (matches external deployment)
+    environment:
+      # API Endpoints (using nginx proxy)
+      - REACT_APP_MSTR_API_URL=/api/mstr
+      - REACT_APP_COGNOS_API_URL=/api/cognos
+      - REACT_APP_TABLEAU_API_URL=/api/tableau
+      - REACT_APP_DEBUG=false
+      - REACT_APP_API_TIMEOUT=30000
+    restart: always
+    depends_on:
+      - mstr-dax-api
+      - cognos-dax-api
+      - tableau-dax-api
+    networks:
+      - dax-network
+
+  # MicroStrategy DAX API (placeholder - replace with actual service)
+  mstr-dax-api:
+    image: daxaicollection-microstrategy-dax-api:latest
+    container_name: mstr-dax-api
+    # Port removed - accessed through nginx proxy
+    restart: always
+    networks:
+      - dax-network
+
+  # Cognos DAX API (placeholder - replace with actual service)
+  cognos-dax-api:
+    image: daxaicollection-cognos-dax-api:latest
+    container_name: cognos-dax-api
+    # Port removed - accessed through nginx proxy
+    restart: always
+    networks:
+      - dax-network
+
+  # Tableau DAX API (placeholder - replace with actual service)
+  tableau-dax-api:
+    image: daxaicollection-bi-migrator-dax-api:latest
+    container_name: tableau-dax-api
+    # Port removed - accessed through nginx proxy
+    restart: always
+    networks:
+      - dax-network
+
+networks:
+  dax-network:
+    driver: bridge
+
+volumes:
+  app-data:
+    driver: local
+  app-backups:
+    driver: local
